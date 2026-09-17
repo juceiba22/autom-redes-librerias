@@ -1,0 +1,8 @@
+{
+  "name": "autom-redes-librerias",
+  "version": "1.0.0",
+  "description": "Automatizacion de Carruseles de Libros para Librerias",
+  "scripts": {
+    "build": "echo Static deployment ready"
+  }
+}

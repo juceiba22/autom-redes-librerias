@@ -1,0 +1,112 @@
+﻿{
+  "name": "Book Carousel - 1. Generar Carrusel desde Reseña (Claude)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "generate-carousel",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-trigger",
+      "name": "Webhook: Iniciar Generación",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.anthropic.com/v1/messages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "x-api-key",
+              "value": "={{$env.ANTHROPIC_API_KEY || $env.CLAUDE_API_KEY}}"
+            },
+            {
+              "name": "anthropic-version",
+              "value": "2023-06-01"
+            },
+            {
+              "name": "content-type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"model\": \"claude-3-5-sonnet-20241022\",\n  \"max_tokens\": 1500,\n  \"system\": \"Eres el redactor jefe de marketing editorial para librerías independientes y cuentas de Bookstagram. Transforma la reseña en un carrusel de Instagram de 5 diapositivas (cover_hook, quote, synopsis, highlights, cta) y un caption con hashtags. Responde ÚNICA Y EXCLUSIVAMENTE con un JSON válido sin texto adicional ni markdown: {\\\"caption\\\": \\\"...\\\", \\\"hashtags\\\": [\\\"#libros\\\", ...], \\\"slides\\\": [{\\\"type\\\": \\\"cover_hook\\\", \\\"title\\\": \\\"...\\\", \\\"subtitle\\\": \\\"...\\\"}, {\\\"type\\\": \\\"quote\\\", \\\"quote\\\": \\\"...\\\", \\\"subtitle\\\": \\\"...\\\"}, {\\\"type\\\": \\\"synopsis\\\", \\\"title\\\": \\\"...\\\", \\\"body\\\": \\\"...\\\"}, {\\\"type\\\": \\\"highlights\\\", \\\"title\\\": \\\"...\\\", \\\"body\\\": \\\"...\\\"}, {\\\"type\\\": \\\"cta\\\", \\\"title\\\": \\\"...\\\", \\\"body\\\": \\\"...\\\"}]}\",\n  \"messages\": [\n    {\n      \"role\": \"user\",\n      \"content\": \"LIBRO: {{$json.body.bookTitle}}\\nAUTOR: {{$json.body.bookAuthor}}\\nRESEÑA:\\n{{$json.body.reviewText}}\"\n    }\n  ]\n}",
+        "options": {}
+      },
+      "id": "llm-brain-claude",
+      "name": "Cloud LLM (Claude): Redactar Carrusel",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [440, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{$env.RENDERER_URL || 'http://renderer:3001'}}/api/render-carousel",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\n  \"book\": {\n    \"title\": $('Webhook: Iniciar Generación').item.json.body.bookTitle,\n    \"author\": $('Webhook: Iniciar Generación').item.json.body.bookAuthor,\n    \"genre\": $('Webhook: Iniciar Generación').item.json.body.genre,\n    \"coverImageUrl\": $('Webhook: Iniciar Generación').item.json.body.coverImageUrl\n  },\n  \"bookstore\": $('Webhook: Iniciar Generación').item.json.body.bookstore,\n  \"theme\": $('Webhook: Iniciar Generación').item.json.body.theme || 'editorial_classic',\n  \"aspectRatio\": $('Webhook: Iniciar Generación').item.json.body.aspectRatio || '4:5',\n  \"slides\": JSON.parse($json.content[0].text.replace(/```json\\n?|```/g, '')).slides\n}",
+        "options": {}
+      },
+      "id": "render-service",
+      "name": "Microservicio: Renderizar Slides a PNG",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [680, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"bookTitle\": $('Webhook: Iniciar Generación').item.json.body.bookTitle,\n  \"bookAuthor\": $('Webhook: Iniciar Generación').item.json.body.bookAuthor,\n  \"llmCopy\": JSON.parse($('Cloud LLM (Claude): Redactar Carrusel').item.json.content[0].text.replace(/```json\\n?|```/g, '')),\n  \"renderData\": $json.data\n}",
+        "options": {}
+      },
+      "id": "webhook-respond",
+      "name": "Responder al Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [920, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Iniciar Generación": {
+      "main": [
+        [
+          {
+            "node": "Cloud LLM (Claude): Redactar Carrusel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cloud LLM (Claude): Redactar Carrusel": {
+      "main": [
+        [
+          {
+            "node": "Microservicio: Renderizar Slides a PNG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Microservicio: Renderizar Slides a PNG": {
+      "main": [
+        [
+          {
+            "node": "Responder al Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}

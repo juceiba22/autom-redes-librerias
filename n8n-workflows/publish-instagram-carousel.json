@@ -1,0 +1,208 @@
+﻿{
+  "name": "Book Carousel - 2. Publicar en Instagram (Meta Graph API)",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "publish-carousel",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "webhook-publish-trigger",
+      "name": "Webhook: Publicar Carrusel",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [200, 300]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "body.slideImageUrls",
+        "options": {}
+      },
+      "id": "split-slides",
+      "name": "Separar Slides Individuales",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [420, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$('Webhook: Publicar Carrusel').item.json.body.igUserId}}/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "image_url",
+              "value": "={{$json}}"
+            },
+            {
+              "name": "is_carousel_item",
+              "value": "true"
+            },
+            {
+              "name": "access_token",
+              "value": "={{$('Webhook: Publicar Carrusel').item.json.body.accessToken}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-slide-container",
+      "name": "Meta API: Crear Item Container",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [640, 300]
+    },
+    {
+      "parameters": {
+        "operation": "aggregateItems",
+        "aggregate": "aggregateAllItemData",
+        "options": {}
+      },
+      "id": "aggregate-containers",
+      "name": "Recopilar IDs de Slides",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 3,
+      "position": [860, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$('Webhook: Publicar Carrusel').item.json.body.igUserId}}/media",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "media_type",
+              "value": "CAROUSEL"
+            },
+            {
+              "name": "children",
+              "value": "={{$json.data.map(item => item.id).join(',')}}"
+            },
+            {
+              "name": "caption",
+              "value": "={{$('Webhook: Publicar Carrusel').item.json.body.caption}}\n\n{{$('Webhook: Publicar Carrusel').item.json.body.hashtags ? $('Webhook: Publicar Carrusel').item.json.body.hashtags.join(' ') : ''}}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{$('Webhook: Publicar Carrusel').item.json.body.accessToken}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "create-carousel-container",
+      "name": "Meta API: Crear Carrusel Contenedor",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1080, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "=https://graph.facebook.com/v20.0/{{$('Webhook: Publicar Carrusel').item.json.body.igUserId}}/media_publish",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "creation_id",
+              "value": "={{$json.id}}"
+            },
+            {
+              "name": "access_token",
+              "value": "={{$('Webhook: Publicar Carrusel').item.json.body.accessToken}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "publish-carousel",
+      "name": "Meta API: Publicar en Instagram",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1300, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={\n  \"success\": true,\n  \"message\": \"¡Carrusel publicado exitosamente en Instagram!\",\n  \"postId\": $json.id,\n  \"publishedAt\": new Date().toISOString()\n}",
+        "options": {}
+      },
+      "id": "respond-publish",
+      "name": "Confirmar Publicación a Frontend",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1520, 300]
+    }
+  ],
+  "connections": {
+    "Webhook: Publicar Carrusel": {
+      "main": [
+        [
+          {
+            "node": "Separar Slides Individuales",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Separar Slides Individuales": {
+      "main": [
+        [
+          {
+            "node": "Meta API: Crear Item Container",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta API: Crear Item Container": {
+      "main": [
+        [
+          {
+            "node": "Recopilar IDs de Slides",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recopilar IDs de Slides": {
+      "main": [
+        [
+          {
+            "node": "Meta API: Crear Carrusel Contenedor",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta API: Crear Carrusel Contenedor": {
+      "main": [
+        [
+          {
+            "node": "Meta API: Publicar en Instagram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Meta API: Publicar en Instagram": {
+      "main": [
+        [
+          {
+            "node": "Confirmar Publicación a Frontend",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  }
+}
