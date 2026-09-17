@@ -1,110 +1,171 @@
-﻿<!DOCTYPE html>
-<html lang="es">
+<!DOCTYPE html>
+<html lang="es" class="dark">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LibrerIA - Automatización de Carruseles de Libros</title>
+  <title>LibrerIA Studio - Diseñado con Google Stitch</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;0,800;1,600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            stitch: {
+              bg: '#0a0e16',
+              surface: '#0f131c',
+              container: '#181c24',
+              'container-high': '#222630',
+              'container-highest': '#2d323e',
+              primary: '#ffc174',
+              'primary-dim': '#f59e0b',
+              accent: '#ea580c',
+              outline: '#534434',
+              muted: '#94a3b8'
+            }
+          },
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+            serif: ['"Playfair Display"', 'Georgia', 'serif']
+          }
+        }
+      }
+    }
+  </script>
   <style>
-    body { font-family: 'Inter', sans-serif; }
+    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #0a0e16; color: #f8fafc; }
     .font-serif { font-family: 'Playfair Display', Georgia, serif; }
-    .custom-scrollbar::-webkit-scrollbar { width: 6px; height: 6px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #334155; border-radius: 3px; }
-    .slide-shadow { box-shadow: 0 20px 45px -15px rgba(0, 0, 0, 0.5); }
+    .book-3d {
+      transform: perspective(1000px) rotateY(-10deg) rotateX(3deg);
+      box-shadow: -15px 25px 45px -10px rgba(0, 0, 0, 0.7), 0 0 35px rgba(245, 158, 11, 0.12);
+      transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .book-3d:hover {
+      transform: perspective(1000px) rotateY(-4deg) rotateX(1deg) translateY(-4px);
+      box-shadow: -10px 30px 50px -10px rgba(0, 0, 0, 0.8), 0 0 45px rgba(245, 158, 11, 0.2);
+    }
+    .amber-glow {
+      background: linear-gradient(135deg, #f59e0b 0%, #ea580c 100%);
+      box-shadow: 0 10px 28px -6px rgba(245, 158, 11, 0.38), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+    }
+    .amber-glow:hover {
+      background: linear-gradient(135deg, #fbbf24 0%, #f97316 100%);
+      box-shadow: 0 14px 34px -4px rgba(245, 158, 11, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    }
+    .glass-card {
+      background: rgba(18, 22, 31, 0.85);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(83, 68, 52, 0.35);
+    }
+    .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #31353e; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #f59e0b; }
   </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col">
+<body class="min-h-screen flex flex-col selection:bg-amber-500/30 selection:text-amber-200">
 
-  <!-- HEADER -->
-  <header class="border-b border-slate-800 bg-slate-950/80 backdrop-blur sticky top-0 z-40 px-6 py-4">
+  <!-- HEADER ELEGANTE CON DISEÑO STITCH -->
+  <header class="border-b border-stitch-outline/30 bg-[#0b0f17]/90 backdrop-blur-xl sticky top-0 z-50 px-6 py-3.5">
     <div class="max-w-7xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-600 to-orange-500 flex items-center justify-center text-xl shadow-lg shadow-orange-500/20">
-          📚
+      <div class="flex items-center space-x-3.5">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-amber-500 via-orange-500 to-amber-400 p-[1px] shadow-lg shadow-amber-500/20">
+          <div class="w-full h-full bg-[#0f131c] rounded-[11px] flex items-center justify-center text-xl">
+            📚
+          </div>
         </div>
         <div>
-          <h1 class="text-lg font-bold tracking-tight text-white flex items-center gap-2">
-            Librer<span class="text-orange-500">IA</span> Studio
-            <span class="text-xs font-medium bg-orange-500/20 text-orange-400 px-2 py-0.5 rounded-full border border-orange-500/30">Railway Edition</span>
-          </h1>
-          <p class="text-xs text-slate-400">Automatización de Reseñas a Carruseles de Redes Sociales</p>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight text-white">
+              Librer<span class="text-amber-400 font-serif italic">IA</span> Studio
+            </h1>
+            <span class="text-[10px] font-bold tracking-widest uppercase bg-amber-500/10 text-amber-400 border border-amber-500/30 px-2 py-0.5 rounded-full">
+              Stitch Design System
+            </span>
+          </div>
+          <p class="text-xs text-slate-400">Automatización Editorial de Reseñas a Carruseles de Instagram</p>
         </div>
       </div>
 
-      <div class="flex items-center space-x-4">
-        <div class="hidden sm:flex items-center space-x-2 bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-xs text-slate-300">
-          <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-          <span>Orquestador n8n: <strong class="text-emerald-400">Conectado</strong></span>
+      <div class="flex items-center space-x-3">
+        <div class="hidden md:flex items-center space-x-2 bg-stitch-surface border border-stitch-outline/30 rounded-lg px-3 py-1.5 text-xs text-slate-300">
+          <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse shadow-sm shadow-emerald-400/50"></span>
+          <span>Orquestador n8n: <strong class="text-emerald-400 font-medium">Activo</strong></span>
         </div>
-        <button id="btnSettingsModal" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5">
-          <span>⚙️ Configurar Marca</span>
+        <button id="btnSettingsModal" class="text-xs bg-stitch-container hover:bg-stitch-container-high text-slate-200 border border-stitch-outline/40 hover:border-amber-500/50 px-3.5 py-1.5 rounded-lg transition duration-200 flex items-center gap-1.5 shadow-sm">
+          <span>⚙️ Marca & Webhook</span>
         </button>
       </div>
     </div>
   </header>
 
-  <!-- MAIN CONTAINER -->
+  <!-- CONTENIDO PRINCIPAL -->
   <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-12 gap-8">
 
-    <!-- COLUMNA IZQUIERDA: FORMULARIO -->
+    <!-- COLUMNA IZQUIERDA: STUDIO DE CURADURÍA (5 cols) -->
     <section class="lg:col-span-5 flex flex-col space-y-5">
       
-      <!-- Selector de Ejemplos -->
-      <div class="bg-slate-800/60 border border-slate-700/60 rounded-xl p-4">
-        <div class="flex items-center justify-between mb-2">
-          <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">💡 Cargar Ejemplo de Prueba</span>
-          <span class="text-[11px] text-orange-400">1 clic para demo</span>
+      <!-- Presets Literarios -->
+      <div class="glass-card rounded-2xl p-4">
+        <div class="flex items-center justify-between mb-2.5">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-amber-400/90 flex items-center gap-1.5">
+            <span>✨</span> Ejemplos Editoriales Precargados
+          </span>
+          <span class="text-[10px] text-slate-400 font-medium">1 clic para cargar</span>
         </div>
         <div class="grid grid-cols-3 gap-2">
-          <button onclick="loadSample(1)" class="text-left p-2 rounded-lg bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 text-xs transition">
-            <div class="font-semibold truncate text-white">Cien años...</div>
+          <button onclick="loadSample(1)" class="text-left p-2.5 rounded-xl bg-stitch-container/70 hover:bg-stitch-container-high border border-stitch-outline/30 hover:border-amber-500/40 text-xs transition duration-200 group">
+            <div class="font-bold truncate text-slate-200 group-hover:text-amber-300">Cien años...</div>
             <div class="text-[10px] text-slate-400 truncate">G. García Márquez</div>
           </button>
-          <button onclick="loadSample(2)" class="text-left p-2 rounded-lg bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 text-xs transition">
-            <div class="font-semibold truncate text-white">Hábitos Atómicos</div>
+          <button onclick="loadSample(2)" class="text-left p-2.5 rounded-xl bg-stitch-container/70 hover:bg-stitch-container-high border border-stitch-outline/30 hover:border-amber-500/40 text-xs transition duration-200 group">
+            <div class="font-bold truncate text-slate-200 group-hover:text-amber-300">Hábitos Atómicos</div>
             <div class="text-[10px] text-slate-400 truncate">James Clear</div>
           </button>
-          <button onclick="loadSample(3)" class="text-left p-2 rounded-lg bg-slate-900/80 hover:bg-slate-700/80 border border-slate-700 text-xs transition">
-            <div class="font-semibold truncate text-white">La Sombra del...</div>
+          <button onclick="loadSample(3)" class="text-left p-2.5 rounded-xl bg-stitch-container/70 hover:bg-stitch-container-high border border-stitch-outline/30 hover:border-amber-500/40 text-xs transition duration-200 group">
+            <div class="font-bold truncate text-slate-200 group-hover:text-amber-300">La Sombra del...</div>
             <div class="text-[10px] text-slate-400 truncate">C. Ruiz Zafón</div>
           </button>
         </div>
       </div>
 
-      <!-- Formulario -->
-      <div class="bg-slate-800/80 border border-slate-700 rounded-2xl p-6 shadow-xl space-y-4">
-        <h2 class="text-base font-semibold text-white flex items-center gap-2">
-          <span>📖</span> Datos del Libro y Reseña
-        </h2>
+      <!-- Formulario de Curaduría -->
+      <div class="glass-card rounded-2xl p-6 shadow-2xl space-y-4">
+        <div class="flex items-center justify-between pb-1 border-b border-stitch-outline/20">
+          <h2 class="text-sm font-bold text-white flex items-center gap-2 uppercase tracking-wide">
+            <span>📖</span> Información de la Obra
+          </h2>
+          <span class="text-[11px] text-amber-400/80 font-mono">Claude 3.5 Ready</span>
+        </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <div class="grid grid-cols-2 gap-3.5">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Título del Libro *</label>
-            <input id="inputTitle" type="text" placeholder="Ej: Rayuela" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500 transition">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Título del Libro *</label>
+            <input id="inputTitle" type="text" placeholder="Ej: Rayuela" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition duration-200">
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Autor *</label>
-            <input id="inputAuthor" type="text" placeholder="Ej: Julio Cortázar" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500 transition">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Autor *</label>
+            <input id="inputAuthor" type="text" placeholder="Ej: Julio Cortázar" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl px-3.5 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition duration-200">
           </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-3">
+        <!-- Píldoras de Género y Plantilla -->
+        <div class="grid grid-cols-2 gap-3.5">
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Género Literario</label>
-            <select id="selectGenre" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500 transition">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Género Literario</label>
+            <select id="selectGenre" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition duration-200">
               <option value="Ficción / Clásico">Ficción / Clásico</option>
               <option value="Thriller / Misterio">Thriller / Misterio</option>
               <option value="Desarrollo Personal / No Ficción">No Ficción / Hábitos</option>
-              <option value="Romance / New Adult">Romance Contemporáneo</option>
-              <option value="Fantasía y Ciencia Ficción">Fantasía / Sci-Fi</option>
+              <option value="Romance Contemporáneo">Romance Contemporáneo</option>
+              <option value="Fantasía y Sci-Fi">Fantasía y Sci-Fi</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs font-medium text-slate-300 mb-1">Estilo de Plantilla</label>
-            <select id="selectTheme" onchange="changeTheme()" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-sm text-white focus:outline-none focus:border-orange-500 transition">
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Estilo de Plantilla</label>
+            <select id="selectTheme" onchange="changeTheme()" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-amber-500 transition duration-200">
               <option value="editorial_classic">Editorial Clásico (Elegante)</option>
               <option value="modern_bold">Modern Bold (Impacto)</option>
               <option value="dark_atmosphere">Dark Atmosphere (Thriller)</option>
@@ -112,95 +173,95 @@
           </div>
         </div>
 
-        <!-- Portada -->
+        <!-- Portada con Dropzone y Vista Previa 3D -->
         <div>
-          <label class="block text-xs font-medium text-slate-300 mb-1">Portada del Libro (Imagen)</label>
-          <div class="flex items-center space-x-3">
-            <div id="coverPreviewBox" class="w-14 h-20 bg-slate-900 border border-slate-700 rounded-md overflow-hidden flex items-center justify-center text-slate-500 text-xs shrink-0 relative">
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Portada del Libro</label>
+          <div class="flex items-center space-x-4 p-3 bg-stitch-surface/60 rounded-xl border border-stitch-outline/30">
+            <div id="coverPreviewBox" class="w-14 h-20 bg-stitch-container rounded-lg overflow-hidden flex items-center justify-center text-slate-500 text-xs shrink-0 relative book-3d">
               <span id="coverPlaceholder">Sin foto</span>
               <img id="coverPreviewImg" src="" class="w-full h-full object-cover hidden" alt="Portada">
             </div>
             <div class="flex-1">
-              <input id="inputCoverFile" type="file" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-slate-700 file:text-white hover:file:bg-slate-600 cursor-pointer">
-              <p class="text-[11px] text-slate-400 mt-1">La IA extrae la paleta cromática de esta portada.</p>
+              <input id="inputCoverFile" type="file" accept="image/*" class="block w-full text-xs text-slate-400 file:mr-2.5 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-bold file:bg-stitch-container-highest file:text-amber-300 hover:file:bg-amber-500/20 cursor-pointer">
+              <p class="text-[11px] text-slate-400 mt-1">Extracción cromática automática para armonizar el carrusel.</p>
             </div>
           </div>
         </div>
 
         <!-- Texto Reseña -->
         <div>
-          <div class="flex items-center justify-between mb-1">
-            <label class="block text-xs font-medium text-slate-300">Texto de la Reseña *</label>
-            <span id="charCount" class="text-[10px] text-slate-400">0 caracteres</span>
+          <div class="flex items-center justify-between mb-1.5">
+            <label class="block text-xs font-semibold text-slate-300">Texto de la Reseña u Opinión *</label>
+            <span id="charCount" class="text-[10px] text-slate-400 font-mono">0 caracteres</span>
           </div>
-          <textarea id="inputReviewText" rows="5" placeholder="Escribe o pega aquí la reseña del libro, sinopsis o impresiones..." class="w-full bg-slate-900 border border-slate-700 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-orange-500 transition custom-scrollbar"></textarea>
+          <textarea id="inputReviewText" rows="4" placeholder="Escribe o pega aquí la reseña del libro, citas memorables o notas de la librería..." class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-3.5 text-sm text-white focus:outline-none focus:border-amber-500 transition duration-200 custom-scrollbar"></textarea>
         </div>
 
-        <!-- Botón Generar -->
-        <button id="btnGenerate" class="w-full py-3.5 px-4 bg-gradient-to-r from-orange-500 to-amber-600 hover:from-orange-600 hover:to-amber-700 text-white font-semibold rounded-xl shadow-lg shadow-orange-500/25 transition duration-200 flex items-center justify-center space-x-2 text-sm">
+        <!-- Botón Luminous Amber CTA -->
+        <button id="btnGenerate" class="w-full py-3.5 px-5 amber-glow text-white font-bold rounded-xl transition-all duration-300 flex items-center justify-center space-x-2 text-sm tracking-wide cursor-pointer">
           <span>✨ Generar Carrusel con IA</span>
         </button>
 
         <!-- Barra de Progreso -->
-        <div id="progressContainer" class="hidden space-y-1.5 pt-2">
-          <div class="flex justify-between text-xs text-orange-400">
-            <span id="progressLabel">Procesando...</span>
-            <span id="progressPercent">0%</span>
+        <div id="progressContainer" class="hidden space-y-1.5 pt-1">
+          <div class="flex justify-between text-xs text-amber-300">
+            <span id="progressLabel">Enviando a Claude 3.5 Sonnet...</span>
+            <span id="progressPercent" class="font-mono font-bold">0%</span>
           </div>
-          <div class="w-full bg-slate-900 h-2 rounded-full overflow-hidden">
-            <div id="progressBar" class="bg-orange-500 h-full w-0 transition-all duration-300"></div>
+          <div class="w-full bg-stitch-container h-2 rounded-full overflow-hidden p-[1px]">
+            <div id="progressBar" class="bg-gradient-to-r from-amber-500 to-orange-500 h-full w-0 rounded-full transition-all duration-300"></div>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- COLUMNA DERECHA: PREVIEW Y EDITOR -->
+    <!-- COLUMNA DERECHA: CANVAS DE PREVIEW Y EDITOR (7 cols) -->
     <section class="lg:col-span-7 flex flex-col space-y-5">
       
-      <!-- Pestañas -->
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+      <!-- Pestañas de Vista -->
+      <div class="flex items-center justify-between border-b border-stitch-outline/25 pb-3">
         <div class="flex space-x-2">
-          <button id="tabPreview" class="px-4 py-2 bg-slate-800 text-white rounded-lg text-xs font-medium border border-slate-700 flex items-center gap-1.5">
-            <span>👁️ Previsualizador</span>
+          <button id="tabPreview" class="px-4 py-2 bg-stitch-container-highest text-white rounded-xl text-xs font-semibold border border-stitch-outline/50 flex items-center gap-1.5 shadow-sm">
+            <span>👁️ Previsualizador 4:5</span>
           </button>
-          <button id="tabEditor" class="px-4 py-2 bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs font-medium border border-transparent transition flex items-center gap-1.5">
-            <span>✏️ Editar Diapositiva</span>
+          <button id="tabEditor" class="px-4 py-2 bg-stitch-surface/60 hover:bg-stitch-container text-slate-400 hover:text-white rounded-xl text-xs font-semibold border border-transparent transition flex items-center gap-1.5">
+            <span>✏️ Editar Textos del Slide</span>
           </button>
-          <button id="tabSocial" class="px-4 py-2 bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white rounded-lg text-xs font-medium border border-transparent transition flex items-center gap-1.5">
+          <button id="tabSocial" class="px-4 py-2 bg-stitch-surface/60 hover:bg-stitch-container text-slate-400 hover:text-white rounded-xl text-xs font-semibold border border-transparent transition flex items-center gap-1.5">
             <span>📱 Copy & Hashtags</span>
           </button>
         </div>
 
-        <!-- Formato Ratio -->
-        <div class="flex items-center space-x-1 bg-slate-950 p-1 rounded-lg border border-slate-800 text-xs">
-          <button id="btnRatioPortrait" class="px-2 py-1 bg-slate-800 text-white font-semibold rounded text-[11px]">4:5 (IG Feed)</button>
-          <button id="btnRatioSquare" class="px-2 py-1 text-slate-400 hover:text-white rounded text-[11px]">1:1 (Cuadrado)</button>
+        <div class="flex items-center space-x-1 bg-[#0b0f17] p-1 rounded-xl border border-stitch-outline/30 text-xs">
+          <button id="btnRatioPortrait" class="px-2.5 py-1 bg-stitch-container-highest text-amber-300 font-bold rounded-lg text-[11px]">4:5 (IG)</button>
+          <button id="btnRatioSquare" class="px-2.5 py-1 text-slate-400 hover:text-white rounded-lg text-[11px]">1:1</button>
         </div>
       </div>
 
       <!-- PANEL PREVIEW -->
-      <div id="viewPreview" class="flex flex-col items-center justify-center bg-slate-950/60 border border-slate-800/80 rounded-2xl p-6 min-h-[580px] relative">
+      <div id="viewPreview" class="flex flex-col items-center justify-center glass-card rounded-2xl p-6 min-h-[600px] relative">
         
-        <div class="w-full max-w-[420px] aspect-[4/5] bg-slate-900 rounded-xl overflow-hidden slide-shadow border border-slate-800 relative transition-all duration-300" id="slideFrameContainer">
+        <!-- Tarjeta de Instagram Feed -->
+        <div class="w-full max-w-[420px] aspect-[4/5] bg-stitch-surface rounded-2xl overflow-hidden shadow-2xl border border-stitch-outline/40 relative transition-all duration-300" id="slideFrameContainer">
           <div id="slideContent" class="w-full h-full flex items-center justify-center overflow-hidden">
             <div class="text-center p-8 text-slate-500">
               <span class="text-4xl block mb-2">🎨</span>
-              <p class="text-sm font-medium">Cargando carrusel...</p>
+              <p class="text-sm font-medium">Generando carrusel con diseño Stitch...</p>
             </div>
           </div>
 
-          <!-- Flechas -->
-          <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur flex items-center justify-center transition">
+          <!-- Flechas Flotantes Glassmorphic -->
+          <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition shadow-lg">
             ❮
           </button>
-          <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-black/60 hover:bg-black/90 text-white backdrop-blur flex items-center justify-center transition">
+          <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/85 text-white backdrop-blur-md border border-white/10 flex items-center justify-center transition shadow-lg">
             ❯
           </button>
         </div>
 
-        <!-- Dots -->
-        <div class="flex items-center justify-center space-x-2 mt-4" id="dotsContainer">
-          <button onclick="goToSlide(0)" class="w-3 h-3 rounded-full bg-orange-500"></button>
+        <!-- Dots de Diapositiva -->
+        <div class="flex items-center justify-center space-x-2.5 mt-4" id="dotsContainer">
+          <button onclick="goToSlide(0)" class="w-3 h-3 rounded-full bg-amber-500 shadow-sm shadow-amber-500/50"></button>
           <button onclick="goToSlide(1)" class="w-3 h-3 rounded-full bg-slate-700"></button>
           <button onclick="goToSlide(2)" class="w-3 h-3 rounded-full bg-slate-700"></button>
           <button onclick="goToSlide(3)" class="w-3 h-3 rounded-full bg-slate-700"></button>
@@ -210,99 +271,99 @@
           Diapositiva 1 de 5
         </div>
 
-        <!-- Botones de Acción -->
+        <!-- Acciones Principales -->
         <div class="w-full max-w-[420px] flex items-center gap-3 mt-5">
-          <button id="btnPublish" onclick="publishCarousel()" class="flex-1 py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl text-xs shadow-lg shadow-emerald-600/20 transition flex items-center justify-center gap-2">
-            <span>🚀 Aprobar y Publicar en Instagram</span>
+          <button id="btnPublish" onclick="publishCarousel()" class="flex-1 py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl text-xs shadow-lg shadow-emerald-600/25 transition duration-200 flex items-center justify-center gap-2 cursor-pointer">
+            <span>🚀 Publicar en Instagram</span>
           </button>
-          <button onclick="downloadCurrentSlide()" class="py-2.5 px-4 bg-slate-800 hover:bg-slate-700 text-slate-200 font-medium rounded-xl text-xs border border-slate-700 transition flex items-center justify-center gap-1.5">
+          <button onclick="downloadCurrentSlide()" class="py-3 px-4 bg-stitch-container hover:bg-stitch-container-high text-slate-200 font-semibold rounded-xl text-xs border border-stitch-outline/40 transition flex items-center justify-center gap-1.5 cursor-pointer">
             <span>⬇️ Descargar SVG</span>
           </button>
         </div>
       </div>
 
       <!-- PANEL EDITOR -->
-      <div id="viewEditor" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-        <h3 class="text-sm font-semibold text-white flex items-center gap-2">
-          <span>✏️</span> Ajustar Textos de la Diapositiva (<span id="editorSlideNum">1</span>/5)
+      <div id="viewEditor" class="hidden glass-card rounded-2xl p-6 space-y-4">
+        <h3 class="text-sm font-bold text-white flex items-center gap-2 pb-2 border-b border-stitch-outline/20">
+          <span>✏️</span> Ajustar Contenido del Slide (<span id="editorSlideNum">1</span>/5)
         </h3>
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Título / Gancho Principal</label>
-          <input id="editTitle" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500" oninput="updateActiveSlideContent()">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Título o Gancho Principal</label>
+          <input id="editTitle" type="text" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500" oninput="updateActiveSlideContent()">
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Subtítulo o Bajada</label>
-          <input id="editSubtitle" type="text" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500" oninput="updateActiveSlideContent()">
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Subtítulo o Contexto</label>
+          <input id="editSubtitle" type="text" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500" oninput="updateActiveSlideContent()">
         </div>
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-1">Cuerpo / Cita / Argumento</label>
-          <textarea id="editBody" rows="4" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-sm text-white focus:outline-none focus:border-orange-500 custom-scrollbar" oninput="updateActiveSlideContent()"></textarea>
+          <label class="block text-xs font-semibold text-slate-400 mb-1">Cuerpo, Cita o Argumento</label>
+          <textarea id="editBody" rows="4" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-amber-500 custom-scrollbar" oninput="updateActiveSlideContent()"></textarea>
         </div>
         <div class="flex justify-end">
-          <button onclick="switchTab('preview')" class="py-2 px-4 bg-orange-600 text-white rounded-lg text-xs font-medium">
-            Ver Resultado en Previsualizador →
+          <button onclick="switchTab('preview')" class="py-2.5 px-5 amber-glow text-white font-bold rounded-xl text-xs">
+            Ver en Previsualizador →
           </button>
         </div>
       </div>
 
       <!-- PANEL SOCIAL -->
-      <div id="viewSocial" class="hidden bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-4">
-        <div class="flex items-center justify-between">
-          <h3 class="text-sm font-semibold text-white flex items-center gap-2">
+      <div id="viewSocial" class="hidden glass-card rounded-2xl p-6 space-y-4">
+        <div class="flex items-center justify-between pb-2 border-b border-stitch-outline/20">
+          <h3 class="text-sm font-bold text-white flex items-center gap-2">
             <span>📱</span> Pie de Foto para Instagram (Caption)
           </h3>
-          <button onclick="copyCaption()" class="text-xs bg-slate-800 hover:bg-slate-700 text-orange-400 border border-slate-700 px-3 py-1 rounded-md transition flex items-center gap-1">
+          <button onclick="copyCaption()" class="text-xs bg-stitch-container hover:bg-stitch-container-high text-amber-400 border border-stitch-outline/40 px-3.5 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
             <span id="copyFeedback">📋 Copiar Texto</span>
           </button>
         </div>
-        <textarea id="captionBox" rows="8" class="w-full bg-slate-950 border border-slate-700 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:border-orange-500 custom-scrollbar"></textarea>
+        <textarea id="captionBox" rows="8" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-3.5 text-sm text-slate-200 focus:outline-none focus:border-amber-500 custom-scrollbar"></textarea>
         
         <div>
-          <label class="block text-xs font-medium text-slate-400 mb-2">Hashtags Curados por IA</label>
-          <div id="hashtagsContainer" class="flex flex-wrap gap-1.5"></div>
+          <label class="block text-xs font-semibold text-slate-400 mb-2">Hashtags Curados para Bookstagram</label>
+          <div id="hashtagsContainer" class="flex flex-wrap gap-2"></div>
         </div>
       </div>
 
     </section>
   </main>
 
-  <!-- MODAL AJUSTES -->
-  <div id="settingsModal" class="fixed inset-0 bg-black/75 backdrop-blur-sm z-50 hidden flex items-center justify-center p-4">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4">
-      <div class="flex items-center justify-between border-b border-slate-800 pb-3">
+  <!-- MODAL CONFIGURACIÓN MARCA -->
+  <div id="settingsModal" class="fixed inset-0 bg-black/80 backdrop-blur-md z-50 hidden flex items-center justify-center p-4">
+    <div class="glass-card w-full max-w-md rounded-2xl p-6 shadow-2xl space-y-4 border border-stitch-outline/40">
+      <div class="flex items-center justify-between border-b border-stitch-outline/30 pb-3">
         <h3 class="text-base font-bold text-white flex items-center gap-2">
           <span>🏛️</span> Configuración de la Librería
         </h3>
         <button id="btnCloseSettings" class="text-slate-400 hover:text-white text-lg">✕</button>
       </div>
 
-      <div class="space-y-3 text-xs">
+      <div class="space-y-3.5 text-xs">
         <div>
-          <label class="block text-slate-300 mb-1">Nombre Comercial de la Librería</label>
-          <input id="cfgStoreName" type="text" value="Librería El Ateneo Literario" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+          <label class="block text-slate-300 font-semibold mb-1">Nombre Comercial de la Librería</label>
+          <input id="cfgStoreName" type="text" value="Librería El Ateneo Literario" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-2.5 text-white">
         </div>
         <div>
-          <label class="block text-slate-300 mb-1">Usuario de Instagram (@)</label>
-          <input id="cfgIgHandle" type="text" value="@ateneoliterario" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white">
+          <label class="block text-slate-300 font-semibold mb-1">Usuario de Instagram (@)</label>
+          <input id="cfgIgHandle" type="text" value="@ateneoliterario" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-2.5 text-white">
         </div>
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-300 mb-1">Color Principal</label>
-            <input id="cfgPrimaryColor" type="color" value="#1E293B" class="w-full h-10 rounded-lg bg-slate-950 border border-slate-700 p-1 cursor-pointer">
+            <label class="block text-slate-300 font-semibold mb-1">Color Primario</label>
+            <input id="cfgPrimaryColor" type="color" value="#1E293B" class="w-full h-10 rounded-xl bg-stitch-surface border border-stitch-outline/40 p-1 cursor-pointer">
           </div>
           <div>
-            <label class="block text-slate-300 mb-1">Color de Acento</label>
-            <input id="cfgAccentColor" type="color" value="#EA580C" class="w-full h-10 rounded-lg bg-slate-950 border border-slate-700 p-1 cursor-pointer">
+            <label class="block text-slate-300 font-semibold mb-1">Color de Acento</label>
+            <input id="cfgAccentColor" type="color" value="#F59E0B" class="w-full h-10 rounded-xl bg-stitch-surface border border-stitch-outline/40 p-1 cursor-pointer">
           </div>
         </div>
         <div>
-          <label class="block text-slate-300 mb-1">Webhook URL de n8n (Railway)</label>
-          <input id="cfgN8nWebhook" type="text" placeholder="https://n8n-production.up.railway.app/webhook/generate-carousel" class="w-full bg-slate-950 border border-slate-700 rounded-lg p-2.5 text-white font-mono text-[11px]">
+          <label class="block text-slate-300 font-semibold mb-1">Webhook URL de n8n (Railway)</label>
+          <input id="cfgN8nWebhook" type="text" placeholder="https://n8n-production.up.railway.app/webhook/generate-carousel" class="w-full bg-stitch-surface border border-stitch-outline/40 rounded-xl p-2.5 text-white font-mono text-[11px]">
         </div>
       </div>
 
-      <div class="flex justify-end pt-3 border-t border-slate-800">
-        <button id="btnSaveSettings" class="py-2 px-5 bg-orange-600 hover:bg-orange-500 text-white font-semibold rounded-lg text-xs transition">
+      <div class="flex justify-end pt-3 border-t border-stitch-outline/30">
+        <button id="btnSaveSettings" class="py-2.5 px-5 amber-glow text-white font-bold rounded-xl text-xs transition">
           Guardar Cambios
         </button>
       </div>
