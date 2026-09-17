@@ -1,556 +1,1024 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>LibrerIA Studio - Orquestador Editorial IA</title>
-  <script src="https://cdn.tailwindcss.com"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0">
+  <title>Leonardo — Sistema Editorial Enterprise | Orquestador IA</title>
+  
+  <!-- Google Fonts: Newsreader (Editorial Serif), Public Sans (Clean Sans), Material Symbols -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,500;0,600;0,700;0,800;1,500;1,600;1,700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,500;0,6..72,600;0,6..72,700;1,6..72,400;1,6..72,600&family=Public+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+
+  <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
+      darkMode: "class",
       theme: {
         extend: {
           colors: {
-            parchment: {
-              50: '#FDFBF7',
-              100: '#FAF7F2',
-              200: '#F3EFE6',
-              300: '#E8E2D5',
-              border: '#E5DFD3'
-            },
-            burgundy: {
-              500: '#84202F',
-              600: '#6E1825',
-              700: '#5A121D',
-              800: '#480C16'
-            },
-            gold: {
-              400: '#D4AF37',
-              500: '#C29B38',
-              600: '#A68226'
-            },
-            espresso: '#1F1B18'
+            "primary": "#5c091c",
+            "primary-container": "#7a2230",
+            "brand-wine-dark": "#591621",
+            "brand-wine-hover": "#681d29",
+            "canvas-cream": "#FAF7F2",
+            "surface": "#FAF9F5",
+            "surface-card": "#FFFFFF",
+            "surface-container-low": "#F5F4E8",
+            "surface-container": "#F0EEE2",
+            "surface-container-high": "#EAE9DD",
+            "surface-container-highest": "#E4E3D7",
+            "accent-ochre": "#DFC293",
+            "accent-gold": "#C29B38",
+            "status-success": "#2D5A38",
+            "status-info": "#2B4C6F",
+            "status-warning": "#8F5E16",
+            "text-primary": "#1B1C15",
+            "text-secondary": "#5C5D53",
+            "text-muted": "#858679",
+            "border-subtle": "#DDDCD1",
+            "border-strong": "#C5C4B5"
           },
           fontFamily: {
-            sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
-            serif: ['"Playfair Display"', 'Georgia', 'serif']
+            serif: ['"Newsreader"', 'Georgia', 'serif'],
+            sans: ['"Public Sans"', 'system-ui', 'sans-serif'],
+            display: ['"Newsreader"', 'Georgia', 'serif'],
+            body: ['"Public Sans"', 'system-ui', 'sans-serif']
           }
         }
       }
-    }
+    };
   </script>
+
   <style>
-    body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #FAF7F2; color: #1F1B18; }
-    .font-serif { font-family: 'Playfair Display', Georgia, serif; }
-    .card-soft {
+    body {
+      font-family: 'Public Sans', sans-serif;
+      background-color: #FAF7F2;
+      color: #1B1C15;
+      margin: 0;
+      padding: 0;
+    }
+    .font-serif, .font-headline {
+      font-family: 'Newsreader', Georgia, serif;
+    }
+    .card-stitch {
       background: #FFFFFF;
-      border: 1px solid #E8E2D5;
-      box-shadow: 0 4px 20px -2px rgba(45, 35, 20, 0.05);
+      border: 1px solid #DDDCD1;
+      box-shadow: 0 2px 12px -2px rgba(27, 28, 21, 0.05);
     }
-    .btn-burgundy {
-      background: linear-gradient(135deg, #6E1825 0%, #480C16 100%);
-      color: #FFFFFF;
-      box-shadow: 0 8px 24px -4px rgba(110, 24, 37, 0.35);
-      transition: all 0.2s ease;
+    .card-stitch-interactive {
+      background: #FFFFFF;
+      border: 1px solid #DDDCD1;
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     }
-    .btn-burgundy:hover {
-      background: linear-gradient(135deg, #84202F 0%, #5A121D 100%);
-      box-shadow: 0 12px 28px -2px rgba(110, 24, 37, 0.45);
+    .card-stitch-interactive:hover {
+      border-color: #5c091c;
+      box-shadow: 0 6px 20px -2px rgba(92, 9, 28, 0.12);
       transform: translateY(-1px);
     }
+    .btn-stitch-primary {
+      background: linear-gradient(135deg, #7a2230 0%, #591621 100%);
+      color: #FFFFFF;
+      box-shadow: 0 4px 16px -2px rgba(92, 9, 28, 0.35);
+      transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .btn-stitch-primary:hover {
+      background: linear-gradient(135deg, #8a2a39 0%, #681d29 100%);
+      box-shadow: 0 8px 24px -2px rgba(92, 9, 28, 0.45);
+      transform: translateY(-1px);
+    }
+    .btn-stitch-primary:active {
+      transform: translateY(0);
+      background: #591621;
+    }
     .badge-gold {
-      background: #F8F4E8;
-      border: 1px solid #E0D3AF;
-      color: #8C6D1F;
+      background: #FDF8EC;
+      border: 1px solid #E8D8B0;
+      color: #94721D;
+    }
+    .badge-wine {
+      background: #F8EDEF;
+      border: 1px solid #E8C8CE;
+      color: #5C091C;
+    }
+    .badge-green {
+      background: #EDF5F0;
+      border: 1px solid #B8DAC1;
+      color: #2D5A38;
     }
     .custom-scrollbar::-webkit-scrollbar { width: 5px; height: 5px; }
-    .custom-scrollbar::-webkit-scrollbar-thumb { background: #D5CCBD; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb { background: #DDDCD1; border-radius: 4px; }
+    .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #858679; }
   </style>
 </head>
-<body class="min-h-screen flex flex-col pb-20 md:pb-0">
+<body class="min-h-screen flex flex-col antialiased selection:bg-primary-container selection:text-white pb-20 lg:pb-8">
 
-  <!-- TOP BRAND BAR -->
-  <header class="border-b border-parchment-border bg-white/95 backdrop-blur-md sticky top-0 z-40 px-4 sm:px-6 py-3">
-    <div class="max-w-5xl mx-auto flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="flex flex-col">
-          <div class="flex items-center gap-2">
-            <span class="font-serif font-bold text-lg tracking-tight text-burgundy-700">LibrerIA</span>
-            <span class="text-[10px] font-extrabold tracking-widest uppercase bg-burgundy-50 text-burgundy-700 px-1.5 py-0.5 rounded border border-burgundy-200">
-              ENTERPRISE
-            </span>
-          </div>
-          <div class="flex items-center gap-1.5 text-[11px] text-stone-500">
-            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
-            <span>n8n: <strong>Activo</strong> • 8 Sucursales</span>
-          </div>
+  <!-- ========================================================================= -->
+  <!-- HEADER NAVEGACION SUPERIOR (STITCH DESKTOP & MOBILE HEADER)               -->
+  <!-- ========================================================================= -->
+  <header class="sticky top-0 left-0 right-0 z-50 bg-[#FAF7F2]/95 backdrop-blur-md border-b border-border-subtle shadow-[0_1px_8px_rgba(27,28,21,0.03)]">
+    <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 h-18 py-3 flex items-center justify-between gap-4">
+      
+      <!-- LOGO + MARCA + STATUS -->
+      <div class="flex items-center gap-4">
+        <div class="flex items-baseline gap-2">
+          <span class="font-serif text-2xl font-bold text-primary tracking-tight select-none">Leonardo</span>
+          <span class="text-[10px] font-extrabold uppercase tracking-wider badge-wine px-1.5 py-0.5 rounded">ENTERPRISE</span>
+        </div>
+        
+        <div class="hidden md:flex items-center gap-2 px-2.5 py-1 bg-surface-container-low rounded-lg border border-border-subtle/80">
+          <span class="w-2 h-2 rounded-full bg-status-success animate-pulse"></span>
+          <span class="text-[11px] font-semibold text-text-secondary">n8n: Conectado</span>
+          <span class="text-border-strong text-xs">•</span>
+          <span class="text-[11px] text-text-muted">8 Sucursales Activas</span>
         </div>
       </div>
 
-      <div class="flex items-center space-x-2.5">
-        <div class="hidden sm:flex bg-parchment-200 p-1 rounded-xl border border-parchment-border text-xs font-semibold">
-          <button id="navBtnEstudio" onclick="switchMainView('estudio')" class="px-3 py-1 bg-white text-burgundy-700 shadow-sm rounded-lg transition">📖 Estudio</button>
-          <button id="navBtnFeed" onclick="switchMainView('feed')" class="px-3 py-1 text-stone-600 hover:text-burgundy-700 rounded-lg transition">🖼️ Feed Carrusel</button>
-          <button id="navBtnCadena" onclick="switchMainView('cadena')" class="px-3 py-1 text-stone-600 hover:text-burgundy-700 rounded-lg transition">🏪 Canales</button>
+      <!-- DESKTOP NAV TABS -->
+      <nav class="hidden lg:flex items-center gap-1 bg-surface-container-low p-1 rounded-xl border border-border-subtle">
+        <button id="deskTabEstudio" onclick="selectDesktopTab('estudio')" class="px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-primary shadow-xs">
+          📖 Inicio Rápido / Estudio
+        </button>
+        <button id="deskTabFeed" onclick="selectDesktopTab('feed')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-text-secondary hover:text-primary transition-all">
+          🖼️ Feed & Carrusel 4:5
+        </button>
+        <button id="deskTabCadena" onclick="selectDesktopTab('cadena')" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-text-secondary hover:text-primary transition-all">
+          🏪 Canales & Redes
+        </button>
+        <button id="deskTabConfig" onclick="toggleSettingsModal(true)" class="px-3.5 py-1.5 text-xs font-semibold rounded-lg text-text-secondary hover:text-primary transition-all">
+          ⚙️ Ajustes
+        </button>
+      </nav>
+
+      <!-- SUITE CONTROLS & AVATAR -->
+      <div class="flex items-center gap-3">
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-container-low rounded-lg border border-border-subtle text-xs text-text-secondary">
+          <span class="material-symbols-outlined text-[16px] text-primary">store</span>
+          <span class="font-medium text-text-primary">Casa Central - Corrientes</span>
         </div>
 
-        <button onclick="switchMainView('cadena')" class="w-9 h-9 rounded-full bg-parchment-200 hover:bg-parchment-300 border border-parchment-border flex items-center justify-center text-sm text-stone-700 transition" title="Configuración">
-          ⚙️
+        <button onclick="toggleSettingsModal(true)" class="w-9 h-9 rounded-full bg-surface-container-low hover:bg-surface-container border border-border-subtle flex items-center justify-center text-text-secondary hover:text-primary transition" title="Ajustes de Cadena">
+          <span class="material-symbols-outlined text-[18px]">tune</span>
         </button>
-        <div class="w-9 h-9 rounded-full bg-burgundy-700 text-white font-bold text-xs flex items-center justify-center shadow-sm">
+
+        <div class="w-8 h-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-sm">
           LB
         </div>
       </div>
+
     </div>
   </header>
 
-﻿  <!-- CONTENEDOR CENTRAL STITCH -->
-  <main class="flex-1 max-w-5xl w-full mx-auto p-4 sm:p-6">
+  <!-- ========================================================================= -->
+  <!-- MAIN CONTAINER (1360px HORIZONTAL DESKTOP WORKSPACE + RESPONSIVE MOBILE)   -->
+  <!-- ========================================================================= -->
+  <main class="flex-1 w-full max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-12">
     
-    <!-- VISTA 1: ESTUDIO (Carga, OCR, Reseña y Canales) -->
-    <div id="viewEstudio" class="max-w-xl mx-auto space-y-6">
-
-      <!-- Badge & Hero Title -->
-      <div class="space-y-2 pt-2">
-        <div class="flex items-center justify-between">
-          <div class="inline-flex items-center gap-1.5 badge-gold px-2.5 py-1 rounded-full text-[11px] font-bold tracking-wider uppercase">
-            <span class="w-1.5 h-1.5 rounded-full bg-gold-600"></span>
-            <span>Orquestador Editorial IA</span>
-          </div>
-          <span class="text-xs text-stone-500 font-medium flex items-center gap-1">
-            <span>🌐</span> 8 sedes conectadas
+    <!-- EDITORIAL HERO / BANNER HEADER -->
+    <section class="mb-8">
+      <div class="flex flex-col gap-2 max-w-4xl">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-surface-container-high text-primary text-[11px] font-bold uppercase tracking-wider">
+            <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
+            Orquestador Editorial IA • 8 sedes conectadas
           </span>
+          <span class="text-text-muted text-xs hidden sm:inline">Nodo n8n #CORR-04 • Claude 3.5 Sonnet</span>
         </div>
-
-        <h1 class="font-serif text-2xl sm:text-3xl font-bold text-espresso leading-snug">
+        <h1 class="font-serif text-3xl sm:text-4xl lg:text-[42px] lg:leading-[48px] font-bold text-text-primary tracking-tight mt-1">
           Transforma cualquier reseña en contenido editorial
         </h1>
-        <p class="text-xs sm:text-sm text-stone-600 leading-relaxed">
-          Ingesta automática de notas de prensa, fajas, catálogos y críticas literarias. Síntesis cromática, citas y diagramación para marketing librero multisede.
+        <p class="text-sm sm:text-base text-text-secondary leading-relaxed max-w-3xl">
+          Ingesta automática de notas de prensa, fajas, catálogos y críticas literarias. Síntesis cromática, extracción de citas y diagramación automatizada en formato 4:5 para Instagram y redes sociales.
         </p>
       </div>
+    </section>
 
-      <!-- Cargar Ejemplo de Prueba -->
-      <div class="space-y-2">
-        <div class="flex items-center justify-between text-xs">
-          <span class="font-bold tracking-wider uppercase text-stone-500 text-[11px]">Cargar Ejemplo de Prueba</span>
-          <button onclick="switchMainView('feed')" class="text-burgundy-600 hover:underline font-semibold text-[11px]">Ver catálogo demo →</button>
-        </div>
+    <!-- ======================================================================= -->
+    <!-- REJILLA PRINCIPAL BIPARTITA (7 COLS ESTUDIO + 5 COLS LIVE CAROUSEL FEED) -->
+    <!-- ======================================================================= -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+      
+      <!-- ===================================================================== -->
+      <!-- COLUMNA IZQUIERDA: INGESTA, OCR & ESTUDIO EDITORIAL (7 Columnas LG)   -->
+      <!-- ===================================================================== -->
+      <div id="colStudio" class="flex flex-col gap-6 lg:col-span-7">
+        
+        <!-- 1. CARGAR EJEMPLO DE PRUEBA -->
+        <div class="bg-surface-container-low p-4 sm:p-5 rounded-2xl border border-border-subtle flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Cargar ejemplo de prueba</span>
+            <button onclick="scrollToFeed()" class="text-xs font-bold text-primary hover:text-brand-wine-hover flex items-center gap-1 transition">
+              <span>Ver feed en vivo</span>
+              <span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+            </button>
+          </div>
 
-        <div class="grid grid-cols-2 gap-3">
-          <div onclick="selectPreset(1)" class="card-soft rounded-xl p-3 flex items-center space-x-3 cursor-pointer hover:border-burgundy-500 hover:shadow-md transition group">
-            <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200" class="w-11 h-14 object-cover rounded shadow-sm shrink-0" alt="Cien Años">
-            <div class="min-w-0">
-              <span class="text-[9px] font-bold text-burgundy-600 uppercase tracking-wider block">Ficción • Clás...</span>
-              <h4 class="text-xs font-bold text-stone-900 truncate group-hover:text-burgundy-700">Cien años de s...</h4>
-              <p class="text-[10px] text-stone-500 truncate">G. García Márq...</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <!-- Preset 1: Cien años de soledad -->
+            <div id="cardPreset1" onclick="applyPreset(1)" class="card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group ring-2 ring-primary bg-surface/50">
+              <img src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=200" alt="Cien años de soledad" class="w-11 h-16 object-cover rounded shadow-xs shrink-0">
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] font-bold text-primary uppercase tracking-wider block">Ficción · Clásico</span>
+                <h4 class="text-xs font-bold text-text-primary group-hover:text-primary transition truncate">Cien años de soledad</h4>
+                <p class="text-[11px] text-text-secondary truncate">G. García Márquez</p>
+                <span class="inline-block mt-0.5 text-[9px] font-mono text-text-muted">Reseña El País</span>
+              </div>
+            </div>
+
+            <!-- Preset 2: Hábitos Atómicos -->
+            <div id="cardPreset2" onclick="applyPreset(2)" class="card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group">
+              <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=200" alt="Hábitos Atómicos" class="w-11 h-16 object-cover rounded shadow-xs shrink-0">
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] font-bold text-accent-gold uppercase tracking-wider block">No Ficción · Ensayo</span>
+                <h4 class="text-xs font-bold text-text-primary group-hover:text-primary transition truncate">Hábitos Atómicos</h4>
+                <p class="text-[11px] text-text-secondary truncate">James Clear</p>
+                <span class="inline-block mt-0.5 text-[9px] font-mono text-text-muted">Faja + Resumen</span>
+              </div>
+            </div>
+
+            <!-- Preset 3: La Sombra del Viento -->
+            <div id="cardPreset3" onclick="applyPreset(3)" class="card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group">
+              <img src="https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=200" alt="La Sombra del Viento" class="w-11 h-16 object-cover rounded shadow-xs shrink-0">
+              <div class="min-w-0 flex-1">
+                <span class="text-[9px] font-bold text-primary uppercase tracking-wider block">Novela · Misterio</span>
+                <h4 class="text-xs font-bold text-text-primary group-hover:text-primary transition truncate">La Sombra del Viento</h4>
+                <p class="text-[11px] text-text-secondary truncate">Carlos Ruiz Zafón</p>
+                <span class="inline-block mt-0.5 text-[9px] font-mono text-text-muted">Crítica Cultural</span>
+              </div>
             </div>
           </div>
-
-          <div onclick="selectPreset(2)" class="card-soft rounded-xl p-3 flex items-center space-x-3 cursor-pointer hover:border-burgundy-500 hover:shadow-md transition group">
-            <img src="https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=200" class="w-11 h-14 object-cover rounded shadow-sm shrink-0" alt="Hábitos">
-            <div class="min-w-0">
-              <span class="text-[9px] font-bold text-burgundy-600 uppercase tracking-wider block">No Ficción • ...</span>
-              <h4 class="text-xs font-bold text-stone-900 truncate group-hover:text-burgundy-700">Hábitos Atómi...</h4>
-              <p class="text-[10px] text-stone-500 truncate">James Clear</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Entrada de Documento o Captura -->
-      <div class="card-soft rounded-2xl p-5 space-y-4">
-        <div class="flex items-center justify-between border-b border-parchment-border pb-3">
-          <div class="flex items-center space-x-2 text-xs font-bold text-stone-800">
-            <span>📑</span>
-            <span>Entrada de Documento o Captura</span>
-          </div>
-          <div class="flex bg-parchment-200 p-0.5 rounded-lg text-[10px] font-bold">
-            <button id="btnTabImage" onclick="switchInputMode('image')" class="px-2.5 py-1 bg-white text-burgundy-700 rounded shadow-xs">IMAGEN</button>
-            <button id="btnTabText" onclick="switchInputMode('text')" class="px-2.5 py-1 text-stone-600 hover:text-stone-900 rounded">PDF / TEXTO</button>
-          </div>
         </div>
 
-        <div id="boxUploadImage" class="border-2 border-dashed border-parchment-300 hover:border-burgundy-400 bg-parchment-50 rounded-2xl p-6 text-center cursor-pointer transition relative group">
-          <input type="file" id="inputFile" accept="image/*,.pdf" class="absolute inset-0 opacity-0 cursor-pointer w-full h-full" onchange="handleFileSelected(event)">
-          <div class="w-12 h-12 mx-auto rounded-full bg-burgundy-50 border border-burgundy-100 flex items-center justify-center text-burgundy-600 text-xl mb-2.5 group-hover:scale-105 transition">
-            📸
-          </div>
-          <h3 class="text-sm font-bold text-stone-800">Subir captura, escaneo o PDF de reseña</h3>
-          <p class="text-[11px] text-stone-500 mt-0.5">OCR de alta precisión con extracción de entidades literarias</p>
+        <!-- 2. CAJA PRINCIPAL DE ENTRADA / SUBIDA DRAG & DROP & EDITOR -->
+        <div class="card-stitch rounded-2xl p-5 sm:p-6 flex flex-col gap-5">
           
-          <div class="mt-4 flex items-center justify-center gap-2">
-            <span class="px-3 py-1 bg-white border border-parchment-border rounded-lg text-[11px] font-bold text-burgundy-700 shadow-xs">
-              Explorar o tomar foto
+          <!-- Encabezado con selector IMAGEN | PDF | TEXTO DIRECTO -->
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-primary text-[22px]">auto_stories</span>
+              <h2 class="font-serif text-lg font-bold text-text-primary">Entrada de Documento o Reseña</h2>
+            </div>
+
+            <!-- Tabs de Ingesta -->
+            <div class="flex bg-surface-container-high p-1 rounded-xl text-[11px] font-bold" role="tablist">
+              <button id="tabModeImage" onclick="setIngestMode('image')" class="px-3 py-1 rounded-lg bg-white text-primary shadow-xs transition-all">
+                📸 IMAGEN / FOTO
+              </button>
+              <button id="tabModePdf" onclick="setIngestMode('pdf')" class="px-3 py-1 rounded-lg text-text-secondary hover:text-text-primary transition-all">
+                📄 PDF
+              </button>
+              <button id="tabModeDirect" onclick="setIngestMode('direct')" class="px-3 py-1 rounded-lg text-text-secondary hover:text-text-primary transition-all">
+                ✏️ TEXTO DIRECTO
+              </button>
+            </div>
+          </div>
+
+          <!-- Zona Drag & Drop interactiva -->
+          <div id="dropZoneContainer" class="relative group bg-surface-container-low/70 hover:bg-surface-container-low border-2 border-dashed border-border-strong hover:border-primary transition-all rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer min-h-[220px]">
+            <input id="fileUploadInput" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleFileInputChange(event)">
+            
+            <div class="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 text-primary group-hover:scale-105 transition-transform shadow-xs">
+              <span id="uploadIcon" class="material-symbols-outlined text-[30px]">document_scanner</span>
+            </div>
+
+            <h3 id="uploadTitle" class="font-serif text-lg font-bold text-text-primary mb-1">
+              Subir captura, escaneo o PDF de reseña
+            </h3>
+            <p id="uploadDesc" class="text-xs sm:text-sm text-text-secondary max-w-md mb-4 leading-relaxed">
+              OCR de alta precisión con extracción de entidades literarias, análisis argumental y citas textuales para la red de librerías.
+            </p>
+
+            <div class="flex flex-wrap items-center justify-center gap-3">
+              <span class="px-3.5 py-1.5 bg-white border border-border-subtle font-semibold text-xs text-text-primary rounded-lg shadow-xs group-hover:bg-primary group-hover:text-white transition-colors flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">upload_file</span>
+                Explorar archivo o tomar foto
+              </span>
+              <span class="text-[11px] font-mono text-text-muted">JPG, PNG, PDF (Máx. 25MB)</span>
+            </div>
+
+            <!-- Feedback de archivo cargado -->
+            <div id="fileUploadBadge" class="hidden mt-4 px-3.5 py-1.5 bg-status-success/10 border border-status-success/30 rounded-lg flex items-center gap-2 text-status-success text-xs font-bold">
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              <span id="fileUploadName">archivo.pdf</span>
+              <span class="text-text-muted font-normal text-[11px]">(Listo para orquestar con IA)</span>
+            </div>
+          </div>
+
+          <!-- Formulario de Metadatos y Contenido (siempre disponible para ajustar o para modo Directo) -->
+          <div id="metadataInputsBox" class="flex flex-col gap-3 pt-2">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Título de la Obra *</label>
+                <input id="inputBookTitle" type="text" value="Cien años de soledad" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Autor o Autora *</label>
+                <input id="inputBookAuthor" type="text" value="Gabriel García Márquez" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Género / Colección</label>
+                <input id="inputBookGenre" type="text" value="Ficción / Clásico Latinoamericano" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+              </div>
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Editorial / Sello</label>
+                <input id="inputBookPublisher" type="text" value="Debolsillo / RAE" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+              </div>
+            </div>
+
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary">Texto de la Reseña o Crítica Literaria *</label>
+                <span id="reviewCharCount" class="text-[10px] font-mono text-text-muted">340 caracteres</span>
+              </div>
+              <textarea id="inputReviewText" rows="3" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary focus:outline-none focus:border-primary custom-scrollbar leading-relaxed" oninput="liveUpdateBookData()">Una obra cumbre e inmortal. La historia de la familia Buendía en Macondo no es solo una novela; es un universo fascinante donde lo mágico se entrelaza con las pasiones humanas más crudas. Prosa poética deslumbrante, personajes inolvidables como Úrsula Iguarán o el coronel Aureliano, y una reflexión sobre el destino y la soledad que conmueve profundamente.</textarea>
+            </div>
+
+            <div>
+              <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Cita Destacada para el Slide 2</label>
+              <input id="inputBookQuote" type="text" value="Muchos años después, frente al pelotón de fusilamiento, el coronel Aureliano Buendía había de recordar aquella tarde remota en que su padre lo llevó a conocer el hielo." class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary italic focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+            </div>
+          </div>
+
+          <!-- Microetiquetas de Seguridad y Motor -->
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-text-muted text-xs">
+            <div class="flex items-center gap-4">
+              <span class="flex items-center gap-1 text-status-success font-medium">
+                <span class="material-symbols-outlined text-[16px]">verified</span>
+                Filtro antiplagio y citas verificadas
+              </span>
+              <span class="hidden sm:flex items-center gap-1 text-text-secondary">
+                <span class="material-symbols-outlined text-[16px]">fingerprint</span>
+                Normalización ISBN-13
+              </span>
+            </div>
+            <span class="px-2 py-0.5 rounded bg-surface-container-high text-[11px] font-mono text-text-secondary">
+              Motor IA v4.2 • Claude 3.5 Sonnet
             </span>
-            <span class="text-[10px] text-stone-400 font-mono">JPG, PNG, PDF (Máx. 25MB)</span>
           </div>
-          <div id="fileSelectedFeedback" class="mt-2 text-xs font-bold text-emerald-600 hidden">✓ Archivo cargado correctamente</div>
+
         </div>
 
-        <div id="boxUploadText" class="hidden space-y-3">
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-[11px] font-bold text-stone-600 mb-1">Título de la Obra *</label>
-              <input id="formTitle" type="text" value="Cien años de soledad" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 text-xs text-stone-900 focus:outline-none focus:border-burgundy-500">
-            </div>
-            <div>
-              <label class="block text-[11px] font-bold text-stone-600 mb-1">Autor *</label>
-              <input id="formAuthor" type="text" value="Gabriel García Márquez" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 text-xs text-stone-900 focus:outline-none focus:border-burgundy-500">
-            </div>
+        <!-- 3. BOTÓN PRINCIPAL DE ACCIÓN STITCH (Burgundy Luminous) -->
+        <button id="btnTriggerAi" onclick="executeAiGeneration()" class="w-full btn-stitch-primary p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center gap-1 group cursor-pointer transition">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-[22px] text-accent-ochre group-hover:rotate-12 transition-transform">auto_awesome</span>
+            <span class="font-serif text-xl sm:text-2xl font-bold tracking-wide text-white">Generar carrusel con IA</span>
           </div>
-          <div>
-            <label class="block text-[11px] font-bold text-stone-600 mb-1">Texto de la Reseña o Nota Crítica *</label>
-            <textarea id="formReview" rows="4" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 text-xs text-stone-900 focus:outline-none focus:border-burgundy-500 custom-scrollbar">Una obra cumbre e inmortal. La historia de la familia Buendía en Macondo no es solo una novela; es un universo fascinante donde lo mágico se entrelaza con las pasiones humanas más crudas. Prosa poética deslumbrante, personajes inolvidables como Úrsula Iguarán o el coronel Aureliano, y una reflexión sobre el destino y la soledad que conmueve profundamente.</textarea>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between text-[10px] text-stone-500 pt-1">
-          <span class="flex items-center gap-1 font-medium">
-            <span>🛡️</span> Filtro antiplagio y citas verificadas
-          </span>
-          <span class="font-mono text-stone-400">Motor v4.2</span>
-        </div>
-      </div>
-
-﻿      <!-- BOTON PRINCIPAL STITCH (Burgundy Luminous) -->
-      <button onclick="startAiGeneration()" class="w-full btn-burgundy rounded-2xl py-4 px-6 text-center group cursor-pointer">
-        <div class="flex items-center justify-center gap-2 text-sm font-bold tracking-wide">
-          <span class="text-gold-400">✦</span>
-          <span>Generar carrusel con IA</span>
-        </div>
-        <p class="text-[11px] text-stone-300 font-normal mt-0.5">Extrae metadatos, citas clave y paleta cromática automáticamente</p>
-      </button>
-
-      <!-- CANALES DE LA CADENA / Publicacion Directa -->
-      <div class="card-soft rounded-2xl p-5 space-y-4">
-        <div class="flex items-center justify-between">
-          <div>
-            <span class="text-[10px] font-bold text-burgundy-700 tracking-wider uppercase block">Canales de la Cadena</span>
-            <h3 class="font-serif text-base font-bold text-espresso">Publicación Directa</h3>
-          </div>
-          <span class="text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 px-2.5 py-1 rounded-full">
-            3 Redes Sincronizadas
-          </span>
-        </div>
-
-        <div class="grid grid-cols-3 gap-2.5">
-          <div class="bg-parchment-100 rounded-xl p-3 border border-parchment-border text-center">
-            <span class="text-xl block mb-1">📸</span>
-            <span class="text-[11px] font-bold text-stone-800 block">Instagram</span>
-            <span class="text-[9px] text-stone-500 font-mono truncate block">@librerias_central</span>
-          </div>
-          <div class="bg-parchment-100 rounded-xl p-3 border border-parchment-border text-center">
-            <span class="text-xl block mb-1">🌐</span>
-            <span class="text-[11px] font-bold text-stone-800 block">Facebook</span>
-            <span class="text-[9px] text-stone-500 truncate block">Página Oficial</span>
-          </div>
-          <div class="bg-parchment-100 rounded-xl p-3 border border-parchment-border text-center">
-            <span class="text-xl block mb-1">💬</span>
-            <span class="text-[11px] font-bold text-stone-800 block">WhatsApp</span>
-            <span class="text-[9px] text-stone-500 truncate block">Canal Difusión</span>
-          </div>
-        </div>
-
-        <div class="flex items-center justify-between pt-2 border-t border-parchment-border">
-          <span class="text-xs text-stone-600 font-medium">Distribuir en todas las sedes simultáneamente</span>
-          <label class="relative inline-flex items-center cursor-pointer">
-            <input type="checkbox" checked class="sr-only peer">
-            <div class="w-9 h-5 bg-stone-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-burgundy-700"></div>
-          </label>
-        </div>
-      </div>
-
-      <!-- Flujo de Trabajo Automatizado -->
-      <div class="bg-parchment-200/60 rounded-2xl p-5 border border-parchment-border space-y-3">
-        <span class="text-[10px] font-bold uppercase tracking-wider text-stone-500 block">Flujo de Trabajo Automatizado</span>
-        
-        <div class="space-y-2.5 text-xs text-stone-700">
-          <div class="flex items-start gap-3">
-            <span class="w-5 h-5 rounded-full bg-parchment-300 text-stone-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">1</span>
-            <p>Sube reseña o documento crítico en PDF / Imagen</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="w-5 h-5 rounded-full bg-parchment-300 text-stone-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">2</span>
-            <p>La IA sintetiza argumentos, extrae paleta y diagrama</p>
-          </div>
-          <div class="flex items-start gap-3">
-            <span class="w-5 h-5 rounded-full bg-parchment-300 text-stone-700 font-bold text-[11px] flex items-center justify-center shrink-0 mt-0.5">3</span>
-            <p>Aprueba el carrusel y publica a tus canales de cadena</p>
-          </div>
-        </div>
-      </div>
-
-    </div>
-
-    <!-- VISTA 2: FEED (Previsualizador de Carrusel 4:5 y Editor) -->
-    <div id="viewFeed" class="hidden max-w-2xl mx-auto space-y-5">
-      <div class="flex items-center justify-between">
-        <div>
-          <button onclick="switchMainView('estudio')" class="text-xs font-bold text-burgundy-700 hover:underline flex items-center gap-1 mb-1">
-            ← Volver al Estudio
-          </button>
-          <h2 class="font-serif text-xl font-bold text-espresso">Carrusel Editorial Generado</h2>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-semibold px-2.5 py-1 bg-burgundy-50 text-burgundy-700 rounded-full border border-burgundy-200">
-            Formato 4:5 Instagram
-          </span>
-        </div>
-      </div>
-
-      <div class="card-soft rounded-3xl p-6 flex flex-col items-center">
-        <div class="w-full max-w-[390px] aspect-[4/5] bg-white rounded-2xl overflow-hidden shadow-xl border border-parchment-border relative" id="feedSlideContainer">
-          <div id="slideContent" class="w-full h-full"></div>
-
-          <button onclick="prevSlide()" class="absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-espresso shadow-md flex items-center justify-center text-sm font-bold transition">
-            ❮
-          </button>
-          <button onclick="nextSlide()" class="absolute right-3 top-1/2 -translate-y-1/2 w-9 h-9 rounded-full bg-white/90 hover:bg-white text-espresso shadow-md flex items-center justify-center text-sm font-bold transition">
-            ❯
-          </button>
-        </div>
-
-        <div class="flex items-center justify-center space-x-2 mt-4" id="dotsContainer">
-          <button onclick="goToSlide(0)" class="w-2.5 h-2.5 rounded-full bg-burgundy-700"></button>
-          <button onclick="goToSlide(1)" class="w-2.5 h-2.5 rounded-full bg-stone-300"></button>
-          <button onclick="goToSlide(2)" class="w-2.5 h-2.5 rounded-full bg-stone-300"></button>
-          <button onclick="goToSlide(3)" class="w-2.5 h-2.5 rounded-full bg-stone-300"></button>
-          <button onclick="goToSlide(4)" class="w-2.5 h-2.5 rounded-full bg-stone-300"></button>
-        </div>
-        <div class="text-xs text-stone-500 mt-1 font-mono" id="slideIndexLabel">Diapositiva 1 de 5</div>
-
-        <div class="w-full max-w-[390px] flex items-center gap-3 mt-5">
-          <button onclick="publishToInstagram()" class="flex-1 py-3 px-4 bg-emerald-700 hover:bg-emerald-600 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-2">
-            <span>🚀 Publicar en Canales</span>
-          </button>
-          <button onclick="downloadCurrentSvg()" class="py-3 px-4 card-soft hover:bg-parchment-100 text-stone-700 font-semibold rounded-xl text-xs transition flex items-center justify-center gap-1.5">
-            <span>⬇️ Descargar</span>
-          </button>
-        </div>
-      </div>
-
-      <div class="card-soft rounded-2xl p-5 space-y-4">
-        <h3 class="text-sm font-bold text-espresso flex items-center justify-between border-b border-parchment-border pb-2">
-          <span>✏️ Ajustar Textos del Slide (<span id="editSlideNum">1</span>/5)</span>
-          <button onclick="copyCaptionText()" class="text-xs text-burgundy-700 hover:underline font-semibold">📋 Copiar Caption</button>
-        </h3>
-        <div>
-          <label class="block text-[11px] font-bold text-stone-500 mb-1">Título / Gancho</label>
-          <input id="editTitleInput" type="text" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 text-xs text-stone-900" oninput="updateActiveSlide()">
-        </div>
-        <div>
-          <label class="block text-[11px] font-bold text-stone-500 mb-1">Cuerpo / Cita</label>
-          <textarea id="editBodyInput" rows="3" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 text-xs text-stone-900 custom-scrollbar" oninput="updateActiveSlide()"></textarea>
-        </div>
-      </div>
-    </div>
-
-    <!-- VISTA 3: CANALES / CONFIGURACION -->
-    <div id="viewCadena" class="hidden max-w-xl mx-auto space-y-5">
-      <div class="card-soft rounded-2xl p-6 space-y-4">
-        <h2 class="font-serif text-xl font-bold text-espresso border-b border-parchment-border pb-2">
-          Configuración de Sede y Conexiones
-        </h2>
-        
-        <div class="space-y-3 text-xs">
-          <div>
-            <label class="block text-stone-600 font-bold mb-1">Nombre Comercial de la Librería</label>
-            <input id="cfgStore" type="text" value="Librería El Ateneo Literario" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5">
-          </div>
-          <div>
-            <label class="block text-stone-600 font-bold mb-1">Cuenta de Instagram (@)</label>
-            <input id="cfgHandle" type="text" value="@ateneoliterario" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5">
-          </div>
-          <div>
-            <label class="block text-stone-600 font-bold mb-1">Webhook URL de n8n</label>
-            <input id="cfgWebhook" type="text" placeholder="https://tu-n8n.up.railway.app/webhook/generate-carousel" class="w-full bg-parchment-50 border border-parchment-border rounded-xl p-2.5 font-mono text-[11px]">
-          </div>
-        </div>
-
-        <button onclick="switchMainView('estudio')" class="w-full btn-burgundy py-3 rounded-xl text-xs font-bold mt-2">
-          Guardar Configuración y Volver
+          <span class="text-xs text-white/80 font-normal">Sintetiza argumentos, asigna paleta cromática y diagrama las 5 diapositivas</span>
         </button>
+
+        <!-- Dynamic Loading Status Banner -->
+        <div id="aiProcessingBanner" class="hidden bg-surface-container p-4 rounded-2xl border border-border-strong/60 flex items-center justify-between">
+          <div class="flex items-center gap-3">
+            <div class="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+            <div>
+              <p class="text-xs font-bold text-text-primary">Orquestando pipeline editorial n8n...</p>
+              <p class="text-[11px] text-text-secondary">Claude 3.5 Sonnet sintetiza conceptos y maqueta tipografía Newsreader</p>
+            </div>
+          </div>
+          <span class="text-xs font-bold font-mono text-primary bg-white px-2 py-1 rounded shadow-xs">Paso 2/4</span>
+        </div>
+
       </div>
+
+      <!-- ===================================================================== -->
+      <!-- COLUMNA DERECHA: LIVE CAROUSEL FEED & DISTRIBUTION (5 Columnas LG)   -->
+      <!-- ===================================================================== -->
+      <div id="colFeedCadena" class="flex flex-col gap-6 lg:col-span-5">
+        
+        <!-- SECCION 1: LIVE 4:5 CAROUSEL FEED PREVIEW & SLIDE EDITOR -->
+        <section id="secFeed" class="card-stitch rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+          
+          <!-- Header del Carrusel -->
+          <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+            <div>
+              <span class="text-[10px] font-extrabold uppercase tracking-wider text-primary block">Suite Editorial</span>
+              <h2 class="font-serif text-lg sm:text-xl font-bold text-text-primary">Carrusel Editorial en Vivo</h2>
+            </div>
+            <span class="badge-wine px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1">
+              <span>📐</span> 4:5 Instagram (1080×1350)
+            </span>
+          </div>
+
+          <!-- Frame del Carrusel 4:5 -->
+          <div class="flex flex-col items-center">
+            <div class="w-full max-w-[360px] aspect-[4/5] bg-canvas-cream rounded-2xl overflow-hidden shadow-xl border border-border-subtle relative group" id="feedSlideContainer">
+              
+              <!-- Contenedor del SVG renderizado dinámicamente -->
+              <div id="svgSlideViewport" class="w-full h-full select-none"></div>
+
+              <!-- Controles de navegación de slides flotantes -->
+              <button onclick="prevSlide()" class="absolute left-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-text-primary shadow-md flex items-center justify-center text-sm font-bold transition hover:scale-110 active:scale-95 z-20" title="Slide anterior">
+                ❮
+              </button>
+              <button onclick="nextSlide()" class="absolute right-2.5 top-1/2 -translate-y-1/2 w-8 h-8 rounded-full bg-white/90 hover:bg-white text-text-primary shadow-md flex items-center justify-center text-sm font-bold transition hover:scale-110 active:scale-95 z-20" title="Siguiente slide">
+                ❯
+              </button>
+            </div>
+
+            <!-- Dots Pagination & Label -->
+            <div class="flex items-center justify-center gap-2 mt-3" id="carouselDotsBar">
+              <button onclick="goToSlide(0)" class="w-2.5 h-2.5 rounded-full bg-primary transition-all"></button>
+              <button onclick="goToSlide(1)" class="w-2.5 h-2.5 rounded-full bg-border-strong transition-all"></button>
+              <button onclick="goToSlide(2)" class="w-2.5 h-2.5 rounded-full bg-border-strong transition-all"></button>
+              <button onclick="goToSlide(3)" class="w-2.5 h-2.5 rounded-full bg-border-strong transition-all"></button>
+              <button onclick="goToSlide(4)" class="w-2.5 h-2.5 rounded-full bg-border-strong transition-all"></button>
+            </div>
+            <div class="text-[11px] font-mono text-text-muted mt-1" id="slideIndexText">Diapositiva 1 de 5 • Portada & Gancho</div>
+
+            <!-- Action Buttons for the Carousel -->
+            <div class="w-full max-w-[360px] flex items-center gap-2.5 mt-4">
+              <button onclick="publishToNetwork()" class="flex-1 py-3 px-3.5 bg-status-success hover:bg-emerald-800 text-white font-bold rounded-xl text-xs shadow-md transition flex items-center justify-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px]">send</span>
+                <span>Publicar en Canales</span>
+              </button>
+              <button onclick="downloadActiveSlideSvg()" class="py-3 px-3 bg-surface-container-low hover:bg-surface-container border border-border-subtle text-text-primary font-bold rounded-xl text-xs transition flex items-center justify-center gap-1" title="Descargar SVG en alta resolución">
+                <span class="material-symbols-outlined text-[16px]">download</span>
+                <span>SVG</span>
+              </button>
+              <button onclick="copyInstagramCaption()" class="py-3 px-3 bg-surface-container-low hover:bg-surface-container border border-border-subtle text-text-primary font-bold rounded-xl text-xs transition flex items-center justify-center gap-1" title="Copiar pie de foto y hashtags para Instagram">
+                <span class="material-symbols-outlined text-[16px]">content_copy</span>
+                <span>Caption</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Slide Text Editor Accordion -->
+          <div class="bg-surface-container-low/80 rounded-xl p-3.5 border border-border-subtle flex flex-col gap-2.5 mt-1">
+            <div class="flex items-center justify-between text-xs font-bold text-text-primary">
+              <span class="flex items-center gap-1">
+                <span class="material-symbols-outlined text-[16px] text-primary">edit_note</span>
+                Editar Slide (<span id="editorSlideNum">1</span>/5)
+              </span>
+              <span class="text-[10px] text-text-muted font-normal">Edición en tiempo real</span>
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-0.5">Título / Gancho</label>
+              <input id="quickEditTitle" type="text" class="w-full bg-white border border-border-subtle rounded-lg p-2 text-xs text-text-primary focus:outline-none focus:border-primary" oninput="handleQuickEdit()">
+            </div>
+
+            <div>
+              <label class="block text-[10px] font-bold uppercase tracking-wider text-text-secondary mb-0.5">Cuerpo / Cita / Resumen</label>
+              <textarea id="quickEditBody" rows="2" class="w-full bg-white border border-border-subtle rounded-lg p-2 text-xs text-text-primary focus:outline-none focus:border-primary custom-scrollbar leading-relaxed" oninput="handleQuickEdit()"></textarea>
+            </div>
+          </div>
+
+        </section>
+
+        <!-- SECCION 2: CANALES DE LA CADENA • PUBLICACION DIRECTA -->
+        <section id="secCadena" class="card-stitch rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
+          
+          <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-text-secondary text-[20px]">hub</span>
+              <h3 class="text-xs font-bold uppercase tracking-wider text-text-secondary">Canales de la Cadena • Publicación Directa</h3>
+            </div>
+            <span class="badge-green px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-status-success"></span>
+              3 Redes Sincronizadas
+            </span>
+          </div>
+
+          <!-- Grid de Canales -->
+          <div class="flex flex-col gap-2.5">
+            <!-- Instagram -->
+            <div class="p-3 rounded-xl bg-surface-container-low border border-border-subtle/80 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-primary">
+                  <span class="material-symbols-outlined text-[18px]">photo_camera</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-text-primary">Instagram</p>
+                  <p class="text-[11px] text-text-secondary">@librerias_central • Feed & Historias</p>
+                </div>
+              </div>
+              <span class="badge-green px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Activo</span>
+            </div>
+
+            <!-- Facebook -->
+            <div class="p-3 rounded-xl bg-surface-container-low border border-border-subtle/80 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-status-info">
+                  <span class="material-symbols-outlined text-[18px]">public</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-text-primary">Facebook</p>
+                  <p class="text-[11px] text-text-secondary">Página Oficial de la Cadena</p>
+                </div>
+              </div>
+              <span class="badge-green px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Activo</span>
+            </div>
+
+            <!-- WhatsApp Business -->
+            <div class="p-3 rounded-xl bg-surface-container-low border border-border-subtle/80 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg bg-surface-container-high flex items-center justify-center text-status-success">
+                  <span class="material-symbols-outlined text-[18px]">chat</span>
+                </div>
+                <div>
+                  <p class="text-xs font-bold text-text-primary">WhatsApp Business</p>
+                  <p class="text-[11px] text-text-secondary">Canal de Difusión & Clientes VIP</p>
+                </div>
+              </div>
+              <span class="badge-green px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider">Activo</span>
+            </div>
+          </div>
+
+          <!-- Toggle Multisede -->
+          <div class="p-3 bg-surface-container-high/60 rounded-xl border border-border-subtle/80 flex items-center justify-between">
+            <div class="flex items-center gap-2.5">
+              <span class="material-symbols-outlined text-primary text-[20px]">storefront</span>
+              <div>
+                <p class="text-xs font-bold text-text-primary">Distribución simultánea</p>
+                <p class="text-[11px] text-text-secondary">8 sucursales activas (Buenos Aires, Rosario, Córdoba)</p>
+              </div>
+            </div>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" checked class="sr-only peer">
+              <div class="w-9 h-5 bg-border-strong peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-border-subtle after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-primary"></div>
+            </label>
+          </div>
+
+          <!-- Stepper de Flujo Corporativo -->
+          <div class="pt-2">
+            <div class="flex items-center gap-1.5 mb-3">
+              <span class="material-symbols-outlined text-text-secondary text-[18px]">account_tree</span>
+              <h4 class="text-[11px] font-bold uppercase tracking-wider text-text-secondary">Flujo de Trabajo Automatizado</h4>
+            </div>
+
+            <div class="relative flex flex-col gap-3 pl-5 text-xs">
+              <div class="absolute left-2 top-2 bottom-2 w-0.5 bg-border-subtle"></div>
+              
+              <div class="relative flex items-start gap-2.5">
+                <span class="w-4 h-4 rounded-full bg-primary text-white font-bold text-[9px] flex items-center justify-center z-10">1</span>
+                <div>
+                  <p class="font-bold text-text-primary">Ingesta de documento o crítica</p>
+                  <p class="text-[11px] text-text-secondary">Sube reseña o PDF desde escáner o móvil.</p>
+                </div>
+              </div>
+
+              <div class="relative flex items-start gap-2.5">
+                <span class="w-4 h-4 rounded-full bg-primary-container text-white font-bold text-[9px] flex items-center justify-center z-10">2</span>
+                <div>
+                  <p class="font-bold text-text-primary">Síntesis y diagramación IA</p>
+                  <p class="text-[11px] text-text-secondary">Claude 3.5 Sonnet estructura argumentos y tipografía.</p>
+                </div>
+              </div>
+
+              <div class="relative flex items-start gap-2.5">
+                <span class="w-4 h-4 rounded-full bg-surface-container-highest text-text-primary font-bold text-[9px] flex items-center justify-center z-10">3</span>
+                <div>
+                  <p class="font-bold text-text-primary">Aprobación y publicación masiva</p>
+                  <p class="text-[11px] text-text-secondary">Publica a todos los canales con un solo clic.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actividad Reciente de la Red -->
+          <div class="bg-surface-container-low p-3.5 rounded-xl border border-border-subtle flex flex-col gap-2">
+            <div class="flex items-center justify-between text-[11px]">
+              <span class="font-bold uppercase tracking-wider text-text-secondary">Actividad Reciente en Cadena</span>
+              <span class="font-mono text-text-muted">Hoy, 15:02</span>
+            </div>
+            
+            <div class="flex items-center justify-between py-1 bg-white px-2.5 rounded-lg border border-border-subtle/50 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <div>
+                  <p class="font-bold text-text-primary">El problema final • Pérez-Reverte</p>
+                  <p class="text-[10px] text-text-secondary">Sucursal Recoleta • 4 slides listos</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono text-text-muted">Hace 15m</span>
+            </div>
+
+            <div class="flex items-center justify-between py-1 bg-white px-2.5 rounded-lg border border-border-subtle/50 text-xs">
+              <div class="flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-status-success"></span>
+                <div>
+                  <p class="font-bold text-text-primary">La vegetariana • Han Kang</p>
+                  <p class="text-[10px] text-text-secondary">Casa Central Corrientes • Publicado</p>
+                </div>
+              </div>
+              <span class="text-[10px] font-mono text-text-muted">Hace 54m</span>
+            </div>
+          </div>
+
+        </section>
+
+      </div>
+
     </div>
 
   </main>
 
-  <!-- BOTTOM NAVIGATION BAR -->
-  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-parchment-border py-2 px-6 flex items-center justify-around z-50 md:hidden">
-    <button onclick="switchMainView('estudio')" id="bottomNavEstudio" class="flex flex-col items-center text-burgundy-700 font-bold text-[10px] space-y-1">
-      <span class="text-base">📖</span>
+  <!-- ========================================================================= -->
+  <!-- MODAL DE CONFIGURACION DE SEDES Y N8N                                     -->
+  <!-- ========================================================================= -->
+  <div id="settingsModal" class="hidden fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 border border-border-subtle shadow-2xl flex flex-col gap-4">
+      <div class="flex items-center justify-between border-b border-border-subtle pb-3">
+        <h3 class="font-serif text-lg font-bold text-text-primary flex items-center gap-2">
+          <span class="material-symbols-outlined text-primary text-[20px]">tune</span>
+          Ajustes de Sede y Conexión n8n
+        </h3>
+        <button onclick="toggleSettingsModal(false)" class="text-text-muted hover:text-text-primary transition">
+          <span class="material-symbols-outlined text-[20px]">close</span>
+        </button>
+      </div>
+
+      <div class="flex flex-col gap-3 text-xs">
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">Nombre Comercial de la Sede</label>
+          <input id="cfgStoreName" type="text" value="Casa Central - Av. Corrientes" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary">
+        </div>
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">Instagram (@)</label>
+          <input id="cfgStoreHandle" type="text" value="@librerias_central" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary">
+        </div>
+        <div>
+          <label class="block font-bold text-text-secondary mb-1">Webhook URL n8n (Orquestador)</label>
+          <input id="cfgWebhookUrl" type="text" value="https://tu-n8n.up.railway.app/webhook/generate-carousel" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+        </div>
+      </div>
+
+      <div class="flex items-center gap-2 pt-2">
+        <button onclick="saveSettings()" class="flex-1 btn-stitch-primary py-2.5 rounded-xl text-xs font-bold">
+          Guardar Cambios
+        </button>
+        <button onclick="toggleSettingsModal(false)" class="px-4 py-2.5 bg-surface-container-low hover:bg-surface-container border border-border-subtle rounded-xl text-xs font-semibold text-text-secondary">
+          Cancelar
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
+  <!-- FOOTER DESKTOP                                                            -->
+  <!-- ========================================================================= -->
+  <footer class="w-full bg-surface-container-low py-6 border-t border-border-subtle mt-auto">
+    <div class="max-w-[1360px] mx-auto px-4 sm:px-6 lg:px-8 flex flex-col md:flex-row items-center justify-between gap-4">
+      <div class="flex items-center gap-3">
+        <span class="font-serif text-lg font-bold text-primary">Leonardo</span>
+        <span class="text-xs text-text-muted">Orquestador IA y Gestión Multi-Sucursal para Redes de Librerías</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-4 text-xs font-mono text-text-muted">
+        <span class="flex items-center gap-1.5">
+          <span class="w-1.5 h-1.5 rounded-full bg-status-success"></span>
+          Pipeline Editorial Activo
+        </span>
+        <span>SLA Sincronización: 99.98%</span>
+        <span>v2.8.4 Enterprise</span>
+      </div>
+      <div class="text-xs text-text-muted">
+        © 2025 Leonardo Publishing Technologies. Todos los derechos reservados.
+      </div>
+    </div>
+  </footer>
+
+  <!-- ========================================================================= -->
+  <!-- BOTTOM NAVIGATION BAR (PARA SMARTPHONES & PANTALLAS < 1024PX)             -->
+  <!-- ========================================================================= -->
+  <nav class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-border-subtle py-2 px-6 flex items-center justify-around z-50 lg:hidden shadow-lg">
+    <button id="mobileNavEstudio" onclick="selectMobileTab('estudio')" class="flex flex-col items-center text-primary font-bold text-[10px] space-y-0.5">
+      <span class="material-symbols-outlined text-[20px]">menu_book</span>
       <span>ESTUDIO</span>
     </button>
-    <button onclick="switchMainView('feed')" id="bottomNavFeed" class="flex flex-col items-center text-stone-500 font-bold text-[10px] space-y-1">
-      <span class="text-base">🖼️</span>
+    <button id="mobileNavFeed" onclick="selectMobileTab('feed')" class="flex flex-col items-center text-text-muted font-bold text-[10px] space-y-0.5">
+      <span class="material-symbols-outlined text-[20px]">view_carousel</span>
       <span>FEED</span>
     </button>
-    <button onclick="switchMainView('cadena')" id="bottomNavCadena" class="flex flex-col items-center text-stone-500 font-bold text-[10px] space-y-1">
-      <span class="text-base">🏪</span>
+    <button id="mobileNavCadena" onclick="selectMobileTab('cadena')" class="flex flex-col items-center text-text-muted font-bold text-[10px] space-y-0.5">
+      <span class="material-symbols-outlined text-[20px]">hub</span>
       <span>CADENA</span>
     </button>
   </nav>
 
-  <!-- SCRIPT LOGICO -->
+  <!-- ========================================================================= -->
+  <!-- JAVASCRIPT DE LOGICA EDITORIAL Y RESPONSIVE ENGINE                        -->
+  <!-- ========================================================================= -->
   <script>
+    // ESTADO DE LA APLICACION
     let currentSlide = 0;
     let carouselData = null;
+    let activeMobileTab = 'estudio';
+    let currentPresetId = 1;
 
-    const PRESETS = {
+    // CATÁLOGO DE PRESETS LITERARIOS
+    const BOOK_PRESETS = {
       1: {
         title: "Cien años de soledad",
         author: "Gabriel García Márquez",
-        genre: "Ficción / Clásico",
-        coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600",
+        genre: "Ficción / Clásico Latinoamericano",
+        publisher: "Debolsillo / RAE",
+        coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=800",
         review: "Una obra cumbre e inmortal. La historia de la familia Buendía en Macondo no es solo una novela; es un universo fascinante donde lo mágico se entrelaza con las pasiones humanas más crudas. Prosa poética deslumbrante, personajes inolvidables como Úrsula Iguarán o el coronel Aureliano, y una reflexión sobre el destino y la soledad que conmueve profundamente.",
         quote: "Muchos años después, frente al pelotón de fusilamiento, el coronel Aureliano Buendía había de recordar aquella tarde remota en que su padre lo llevó a conocer el hielo."
       },
       2: {
         title: "Hábitos Atómicos",
         author: "James Clear",
-        genre: "No Ficción",
-        coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=600",
+        genre: "Desarrollo Personal / Ensayo",
+        publisher: "Paidós Empresa",
+        coverUrl: "https://images.unsplash.com/photo-1589829085413-56de8ae18c73?auto=format&fit=crop&q=80&w=800",
         review: "El libro definitivo para entender cómo los cambios diminutos del 1% diario producen resultados gigantescos con el tiempo. James Clear destruye el mito de la motivación y explica la ciencia de los sistemas, la identidad y el entorno. Práctico, directo y sin relleno.",
         quote: "No te elevas al nivel de tus metas. Caes al nivel de tus sistemas."
+      },
+      3: {
+        title: "La Sombra del Viento",
+        author: "Carlos Ruiz Zafón",
+        genre: "Misterio / Novela Gótica",
+        publisher: "Planeta",
+        coverUrl: "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=800",
+        review: "Un homenaje insuperable a los libros y al amor por la lectura. Ambientada en una Barcelona gótica y misteriosa, Daniel Sempere descubre el Cementerio de los Libros Olvidados y un autor maldito, Julián Carax. Una trama laberíntica repleta de secretos, romance y suspenso.",
+        quote: "Cada libro, cada tomo que ves, tiene alma. El alma de quien lo escribió, y el alma de quienes lo leyeron y vivieron y soñaron con él."
       }
     };
 
+    // INICIALIZACION
     document.addEventListener('DOMContentLoaded', () => {
-      selectPreset(1);
+      applyPreset(1);
+      setupResponsiveLayout();
+      window.addEventListener('resize', setupResponsiveLayout);
     });
 
-    function switchMainView(view) {
-      document.getElementById('viewEstudio').classList.add('hidden');
-      document.getElementById('viewFeed').classList.add('hidden');
-      document.getElementById('viewCadena').classList.add('hidden');
+    // SISTEMA RESPONSIVO DUAL (DESKTOP HORIZONTAL COMPLETO + MOBILE TABS)
+    function setupResponsiveLayout() {
+      const isDesktop = window.innerWidth >= 1024;
+      const colStudio = document.getElementById('colStudio');
+      const colFeedCadena = document.getElementById('colFeedCadena');
+      const secFeed = document.getElementById('secFeed');
+      const secCadena = document.getElementById('secCadena');
 
-      const dEstudio = document.getElementById('navBtnEstudio');
-      const dFeed = document.getElementById('navBtnFeed');
-      const dCadena = document.getElementById('navBtnCadena');
-      [dEstudio, dFeed, dCadena].forEach(b => {
-        b.className = "px-3 py-1 text-stone-600 hover:text-burgundy-700 rounded-lg transition";
-      });
-
-      const mEstudio = document.getElementById('bottomNavEstudio');
-      const mFeed = document.getElementById('bottomNavFeed');
-      const mCadena = document.getElementById('bottomNavCadena');
-      [mEstudio, mFeed, mCadena].forEach(b => {
-        b.className = "flex flex-col items-center text-stone-400 font-bold text-[10px] space-y-1";
-      });
-
-      if (view === 'estudio') {
-        document.getElementById('viewEstudio').classList.remove('hidden');
-        dEstudio.className = "px-3 py-1 bg-white text-burgundy-700 shadow-sm rounded-lg transition";
-        mEstudio.className = "flex flex-col items-center text-burgundy-700 font-bold text-[10px] space-y-1";
-      } else if (view === 'feed') {
-        document.getElementById('viewFeed').classList.remove('hidden');
-        dFeed.className = "px-3 py-1 bg-white text-burgundy-700 shadow-sm rounded-lg transition";
-        mFeed.className = "flex flex-col items-center text-burgundy-700 font-bold text-[10px] space-y-1";
-        renderFeedSlide();
+      if (isDesktop) {
+        colStudio.style.display = 'flex';
+        colFeedCadena.style.display = 'flex';
+        secFeed.style.display = 'flex';
+        secCadena.style.display = 'flex';
       } else {
-        document.getElementById('viewCadena').classList.remove('hidden');
-        dCadena.className = "px-3 py-1 bg-white text-burgundy-700 shadow-sm rounded-lg transition";
-        mCadena.className = "flex flex-col items-center text-burgundy-700 font-bold text-[10px] space-y-1";
+        // Modo Móvil: mostrar según pestaña activa
+        if (activeMobileTab === 'estudio') {
+          colStudio.style.display = 'flex';
+          colFeedCadena.style.display = 'none';
+        } else if (activeMobileTab === 'feed') {
+          colStudio.style.display = 'none';
+          colFeedCadena.style.display = 'flex';
+          secFeed.style.display = 'flex';
+          secCadena.style.display = 'none';
+        } else if (activeMobileTab === 'cadena') {
+          colStudio.style.display = 'none';
+          colFeedCadena.style.display = 'flex';
+          secFeed.style.display = 'none';
+          secCadena.style.display = 'flex';
+        }
       }
     }
 
-    function switchInputMode(mode) {
-      const bImg = document.getElementById('btnTabImage');
-      const bTxt = document.getElementById('btnTabText');
-      const boxImg = document.getElementById('boxUploadImage');
-      const boxTxt = document.getElementById('boxUploadText');
+    // PESTAÑAS MÓVILES
+    function selectMobileTab(tab) {
+      activeMobileTab = tab;
+      
+      const bEstudio = document.getElementById('mobileNavEstudio');
+      const bFeed = document.getElementById('mobileNavFeed');
+      const bCadena = document.getElementById('mobileNavCadena');
+
+      [bEstudio, bFeed, bCadena].forEach(b => {
+        b.className = "flex flex-col items-center text-text-muted font-bold text-[10px] space-y-0.5";
+      });
+
+      if (tab === 'estudio') {
+        bEstudio.className = "flex flex-col items-center text-primary font-bold text-[10px] space-y-0.5";
+      } else if (tab === 'feed') {
+        bFeed.className = "flex flex-col items-center text-primary font-bold text-[10px] space-y-0.5";
+        renderFeedSlide();
+      } else if (tab === 'cadena') {
+        bCadena.className = "flex flex-col items-center text-primary font-bold text-[10px] space-y-0.5";
+      }
+
+      setupResponsiveLayout();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // PESTAÑAS DESKTOP
+    function selectDesktopTab(tab) {
+      const bEstudio = document.getElementById('deskTabEstudio');
+      const bFeed = document.getElementById('deskTabFeed');
+      const bCadena = document.getElementById('deskTabCadena');
+
+      [bEstudio, bFeed, bCadena].forEach(b => {
+        b.className = "px-3.5 py-1.5 text-xs font-semibold rounded-lg text-text-secondary hover:text-primary transition-all";
+      });
+
+      if (tab === 'estudio') {
+        bEstudio.className = "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-primary shadow-xs";
+        document.getElementById('colStudio').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (tab === 'feed') {
+        bFeed.className = "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-primary shadow-xs";
+        document.getElementById('secFeed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      } else if (tab === 'cadena') {
+        bCadena.className = "px-3.5 py-1.5 text-xs font-bold rounded-lg transition-all bg-white text-primary shadow-xs";
+        document.getElementById('secCadena').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    }
+
+    function scrollToFeed() {
+      if (window.innerWidth < 1024) {
+        selectMobileTab('feed');
+      } else {
+        selectDesktopTab('feed');
+      }
+    }
+
+    // APLICAR PRESET
+    function applyPreset(id) {
+      currentPresetId = id;
+      const p = BOOK_PRESETS[id];
+      if (!p) return;
+
+      // Highlighting cards
+      [1, 2, 3].forEach(idx => {
+        const card = document.getElementById('cardPreset' + idx);
+        if (card) {
+          if (idx === id) {
+            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group ring-2 ring-primary bg-surface/50";
+          } else {
+            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group";
+          }
+        }
+      });
+
+      // Populate input fields
+      document.getElementById('inputBookTitle').value = p.title;
+      document.getElementById('inputBookAuthor').value = p.author;
+      document.getElementById('inputBookGenre').value = p.genre;
+      document.getElementById('inputBookPublisher').value = p.publisher;
+      document.getElementById('inputReviewText').value = p.review;
+      document.getElementById('inputBookQuote').value = p.quote;
+
+      document.getElementById('reviewCharCount').textContent = p.review.length + ' caracteres';
+
+      // Feedback badge
+      const badge = document.getElementById('fileUploadBadge');
+      const filename = document.getElementById('fileUploadName');
+      filename.textContent = `reseña_critica_${p.title.toLowerCase().replace(/\s+/g, '_')}.pdf`;
+      badge.classList.remove('hidden');
+
+      generateCarouselModel(p);
+    }
+
+    // MODOS DE INGESTA
+    function setIngestMode(mode) {
+      const tabImg = document.getElementById('tabModeImage');
+      const tabPdf = document.getElementById('tabModePdf');
+      const tabDir = document.getElementById('tabModeDirect');
+      const dropZone = document.getElementById('dropZoneContainer');
+      const uploadTitle = document.getElementById('uploadTitle');
+      const uploadDesc = document.getElementById('uploadDesc');
+      const uploadIcon = document.getElementById('uploadIcon');
+      const fileInput = document.getElementById('fileUploadInput');
+
+      [tabImg, tabPdf, tabDir].forEach(t => {
+        t.className = "px-3 py-1 rounded-lg text-text-secondary hover:text-text-primary transition-all";
+      });
 
       if (mode === 'image') {
-        bImg.className = "px-2.5 py-1 bg-white text-burgundy-700 rounded shadow-xs";
-        bTxt.className = "px-2.5 py-1 text-stone-600 hover:text-stone-900 rounded";
-        boxImg.classList.remove('hidden');
-        boxTxt.classList.add('hidden');
+        tabImg.className = "px-3 py-1 rounded-lg bg-white text-primary shadow-xs transition-all font-bold";
+        dropZone.classList.remove('hidden');
+        uploadTitle.textContent = "Subir foto o escaneo de portada / faja";
+        uploadDesc.textContent = "OCR automático con calibración cromática del lomo y tipografía de tapa.";
+        uploadIcon.textContent = "add_a_photo";
+        fileInput.setAttribute('accept', '.jpg,.jpeg,.png,.webp');
+      } else if (mode === 'pdf') {
+        tabPdf.className = "px-3 py-1 rounded-lg bg-white text-primary shadow-xs transition-all font-bold";
+        dropZone.classList.remove('hidden');
+        uploadTitle.textContent = "Subir dossier de prensa o PDF crítico";
+        uploadDesc.textContent = "Extracción de texto completo, citas y notas de la editorial sin pérdidas.";
+        uploadIcon.textContent = "picture_as_pdf";
+        fileInput.setAttribute('accept', '.pdf');
       } else {
-        bTxt.className = "px-2.5 py-1 bg-white text-burgundy-700 rounded shadow-xs";
-        bImg.className = "px-2.5 py-1 text-stone-600 hover:text-stone-900 rounded";
-        boxTxt.classList.remove('hidden');
-        boxImg.classList.add('hidden');
+        tabDir.className = "px-3 py-1 rounded-lg bg-white text-primary shadow-xs transition-all font-bold";
+        dropZone.classList.add('hidden');
       }
     }
 
-    function selectPreset(id) {
-      const p = PRESETS[id];
-      if (!p) return;
-      document.getElementById('formTitle').value = p.title;
-      document.getElementById('formAuthor').value = p.author;
-      document.getElementById('formReview').value = p.review;
-      generateData(p);
+    function handleFileInputChange(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const badge = document.getElementById('fileUploadBadge');
+      const filename = document.getElementById('fileUploadName');
+      filename.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+      badge.classList.remove('hidden');
+
+      const desc = document.getElementById('uploadDesc');
+      desc.textContent = "Archivo cargado correctamente. Listo para procesar con IA.";
     }
 
-    function handleFileSelected(e) {
-      const f = e.target.files[0];
-      if (!f) return;
-      document.getElementById('fileSelectedFeedback').classList.remove('hidden');
-      document.getElementById('fileSelectedFeedback').textContent = '✓ ' + f.name + ' listo para OCR';
+    function liveUpdateBookData() {
+      const p = {
+        title: document.getElementById('inputBookTitle').value.trim() || "Cien años de soledad",
+        author: document.getElementById('inputBookAuthor').value.trim() || "Gabriel García Márquez",
+        genre: document.getElementById('inputBookGenre').value.trim() || "Ficción",
+        publisher: document.getElementById('inputBookPublisher').value.trim() || "Editorial Central",
+        coverUrl: BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl,
+        review: document.getElementById('inputReviewText').value.trim() || "Una lectura fascinante...",
+        quote: document.getElementById('inputBookQuote').value.trim() || "Una frase inolvidable..."
+      };
+      document.getElementById('reviewCharCount').textContent = p.review.length + ' caracteres';
+      generateCarouselModel(p);
     }
 
-    function startAiGeneration() {
-      const title = document.getElementById('formTitle').value.trim();
-      const author = document.getElementById('formAuthor').value.trim();
-      const review = document.getElementById('formReview').value.trim();
+    // DISPARADOR DE GENERACION IA
+    function executeAiGeneration() {
+      const banner = document.getElementById('aiProcessingBanner');
+      banner.classList.remove('hidden');
 
-      generateData({
-        title: title || "Cien años de soledad",
-        author: author || "Gabriel García Márquez",
-        genre: "Ficción",
-        coverUrl: "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600",
-        review: review || "Una obra maestra que trasciende generaciones...",
-        quote: "Muchos años después, frente al pelotón de fusilamiento..."
-      });
+      liveUpdateBookData();
 
-      switchMainView('feed');
+      setTimeout(() => {
+        banner.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="material-symbols-outlined text-status-success text-[24px]">task_alt</span>
+            <div>
+              <p class="text-xs font-bold text-text-primary">¡Carrusel generado con éxito!</p>
+              <p class="text-[11px] text-text-secondary">5 diapositivas diagramadas en Suite Editorial con tipografía Newsreader.</p>
+            </div>
+          </div>
+          <button onclick="scrollToFeed()" class="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold shadow-xs hover:bg-brand-wine-hover transition">
+            Ver Carrusel &rarr;
+          </button>
+        `;
+
+        // Switch to feed on mobile or scroll on desktop
+        if (window.innerWidth < 1024) {
+          selectMobileTab('feed');
+        } else {
+          document.getElementById('secFeed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+      }, 1200);
     }
 
-    function generateData(book) {
+    // MODELO DE DATOS DEL CARRUSEL
+    function generateCarouselModel(book) {
       carouselData = {
         book: book,
         slides: [
           {
             type: "cover_hook",
+            category: "RECOMENDACIÓN EDITORIAL",
             title: "¿POR QUÉ ESTA HISTORIA NO DEJA DORMIR A SUS LECTORES?",
-            subtitle: "Reseña editorial sin spoilers",
+            subtitle: "Reseña literaria sin spoilers",
             body: ""
           },
           {
             type: "quote",
-            title: "CITA INOLVIDABLE",
-            subtitle: "La frase que marca la obra",
+            category: "CITA INOLVIDABLE",
+            title: "LA VOZ DEL AUTOR",
+            subtitle: "La frase que define la obra",
             quote: book.quote || `"${book.review.substring(0, 110)}..."`
           },
           {
             type: "synopsis",
-            title: "LA PREMISA",
-            subtitle: "El corazón del relato",
-            body: book.review.substring(0, 220)
+            category: "LA PREMISA",
+            title: "EL CORAZÓN DEL RELATO",
+            subtitle: "Síntesis argumental",
+            body: book.review.length > 240 ? book.review.substring(0, 240) + '...' : book.review
           },
           {
             type: "highlights",
+            category: "VEREDICTO LIBRERO",
             title: "¿POR QUÉ DEBES LEERLO HOY?",
-            subtitle: "Veredicto del equipo librero",
-            body: "Una narrativa magnética con personajes construidos con maestría. Si buscas una lectura que te envuelva y no te suelte, esta es la elección perfecta."
+            subtitle: "Puntos clave de la crítica",
+            body: "Una narrativa magnética con personajes inolvidables construidos con maestría. Si buscas una lectura transformadora que te envuelva desde la primera página, esta es la elección perfecta."
           },
           {
             type: "cta",
-            title: "DISPONIBLE EN NUESTRAS SEDES",
-            subtitle: "Ejemplares en stock físico",
-            body: "Pídelo hoy con envío a domicilio o visítanos en cualquiera de nuestras sucursales."
+            category: "DISPONIBILIDAD",
+            title: "EN TODAS NUESTRAS SUCURSALES",
+            subtitle: "Ejemplares en stock físico y envíos",
+            body: "Visítanos en Casa Central o en cualquiera de nuestras sedes de la red. Reserva tu copia hoy mismo a través de nuestro canal directo."
           }
         ],
-        caption: `✨ Reseña destacada: "${book.title}" de ${book.author}.\n\n📖 Desliza para descubrir por qué es una de las lecturas más recomendadas del mes.\n\n📍 Ejemplares disponibles en nuestras sedes físicas y pedidos online.`
+        caption: `✨ Reseña destacada: "${book.title}" de ${book.author}.
+
+📖 Desliza para descubrir por qué es una de las lecturas más recomendadas del mes en nuestras librerías.
+
+📍 Ejemplares disponibles en nuestras 8 sucursales físicas y pedidos online.
+
+#LibreriasCentral #${book.title.replace(/\s+/g, '')} #${book.author.replace(/\s+/g, '')} #RecomendacionLiteraria #LibrosRecomendados #Lecturas2025`
       };
-      currentSlide = 0;
+
+      currentSlide = Math.min(currentSlide, carouselData.slides.length - 1);
       renderFeedSlide();
     }
 
+    // RENDERIZADOR SVG VECTORIAL ULTRA NITIDO
     function renderFeedSlide() {
       if (!carouselData) return;
       const slide = carouselData.slides[currentSlide];
@@ -558,116 +1026,136 @@
       const width = 1080;
       const height = 1350;
 
-      let inner = '';
+      let contentSvg = '';
 
       if (slide.type === 'cover_hook') {
-        inner = `
-          <g transform="translate(80, 110)">
-            <rect x="0" y="0" width="260" height="42" rx="21" fill="#6E1825" opacity="0.1" />
-            <text x="130" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="700" fill="#6E1825" text-anchor="middle" letter-spacing="2">RECOMENDACIÓN</text>
+        contentSvg = `
+          <!-- Pill Badge Categoría -->
+          <g transform="translate(80, 100)">
+            <rect x="0" y="0" width="310" height="44" rx="22" fill="#5c091c" opacity="0.1" />
+            <text x="155" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#5c091c" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
           </g>
           
-          <foreignObject x="80" y="200" width="${width - 160}" height="200">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Playfair Display',serif; font-size:52px; font-weight:700; color:#1F1B18; line-height:1.2;">
-              ${escapeHtml(slide.title)}
+          <!-- Título Hook -->
+          <foreignObject x="80" y="180" width="${width - 160}" height="220">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:52px; font-weight:700; color:#1B1C15; line-height:1.2; letter-spacing:-0.02em;">
+              ${escapeXml(slide.title)}
             </div>
           </foreignObject>
 
-          <text x="80" y="380" font-family="'Plus Jakarta Sans', sans-serif" font-size="24" fill="#6E1825" font-weight="600">
-            ${escapeHtml(slide.subtitle)}
+          <!-- Subtítulo -->
+          <text x="80" y="380" font-family="'Public Sans', sans-serif" font-size="22" fill="#5c091c" font-weight="600">
+            ${escapeXml(slide.subtitle)}
           </text>
 
+          <!-- Portada con Sombra Editorial -->
           <g transform="translate(${width / 2 - 180}, 440)">
-            <rect x="15" y="15" width="340" height="500" rx="14" fill="#000000" opacity="0.15" filter="blur(15px)" />
-            <clipPath id="cClip"><rect x="0" y="0" width="360" height="520" rx="12" /></clipPath>
-            <image href="${escapeHtml(book.coverUrl)}" x="0" y="0" width="360" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#cClip)" />
+            <rect x="15" y="15" width="340" height="500" rx="14" fill="#000000" opacity="0.18" filter="blur(15px)" />
+            <clipPath id="bookCoverClip"><rect x="0" y="0" width="360" height="520" rx="12" /></clipPath>
+            <image href="${escapeXml(book.coverUrl)}" x="0" y="0" width="360" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#bookCoverClip)" />
           </g>
 
+          <!-- Metadata al pie -->
           <g transform="translate(80, ${height - 200})">
-            <text x="0" y="0" font-family="'Playfair Display', serif" font-size="34" font-weight="700" fill="#6E1825">${escapeHtml(book.title)}</text>
-            <text x="0" y="34" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" fill="#78716C">de ${escapeHtml(book.author)}</text>
+            <text x="0" y="0" font-family="'Newsreader', serif" font-size="34" font-weight="700" fill="#5c091c">${escapeXml(book.title)}</text>
+            <text x="0" y="36" font-family="'Public Sans', sans-serif" font-size="22" fill="#5C5D53">de ${escapeXml(book.author)} • ${escapeXml(book.publisher || 'Editorial')}</text>
           </g>
         `;
       } else if (slide.type === 'quote') {
-        inner = `
-          <g transform="translate(80, 110)">
-            <rect x="0" y="0" width="220" height="42" rx="21" fill="#C29B38" opacity="0.15" />
-            <text x="110" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="700" fill="#8C6D1F" text-anchor="middle" letter-spacing="2">CITA DESTACADA</text>
+        contentSvg = `
+          <g transform="translate(80, 100)">
+            <rect x="0" y="0" width="240" height="44" rx="22" fill="#C29B38" opacity="0.15" />
+            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#94721D" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
           </g>
 
-          <text x="70" y="320" font-family="'Playfair Display', serif" font-size="240" font-weight="900" fill="#6E1825" opacity="0.12">“</text>
+          <!-- Comilla Decorativa de Fondo -->
+          <text x="70" y="320" font-family="'Newsreader', serif" font-size="260" font-weight="900" fill="#5c091c" opacity="0.08">“</text>
           
-          <rect x="70" y="290" width="${width - 140}" height="580" rx="28" fill="#FFFFFF" stroke="#E8E2D5" stroke-width="1.5" />
+          <!-- Tarjeta de Cita -->
+          <rect x="70" y="280" width="${width - 140}" height="600" rx="28" fill="#FFFFFF" stroke="#DDDCD1" stroke-width="1.5" />
           
-          <foreignObject x="110" y="360" width="${width - 220}" height="380">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Playfair Display',serif; font-size:42px; font-style:italic; font-weight:600; color:#1F1B18; line-height:1.45;">
-              ${escapeHtml(slide.quote || slide.body)}
+          <foreignObject x="120" y="350" width="${width - 240}" height="390">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:42px; font-style:italic; font-weight:600; color:#1B1C15; line-height:1.45;">
+              ${escapeXml(slide.quote || slide.body)}
             </div>
           </foreignObject>
 
-          <g transform="translate(110, 800)">
-            <line x1="0" y1="0" x2="60" y2="0" stroke="#6E1825" stroke-width="4" />
-            <text x="80" y="8" font-family="'Plus Jakarta Sans', sans-serif" font-size="26" font-weight="700" fill="#6E1825">${escapeHtml(book.title)}</text>
-            <text x="80" y="38" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" fill="#78716C">${escapeHtml(book.author)}</text>
+          <g transform="translate(120, 810)">
+            <line x1="0" y1="0" x2="60" y2="0" stroke="#5c091c" stroke-width="4" />
+            <text x="80" y="8" font-family="'Newsreader', serif" font-size="28" font-weight="700" fill="#5c091c">${escapeXml(book.title)}</text>
+            <text x="80" y="38" font-family="'Public Sans', sans-serif" font-size="20" fill="#5C5D53">${escapeXml(book.author)}</text>
           </g>
         `;
       } else {
-        inner = `
-          <g transform="translate(80, 110)">
-            <rect x="0" y="0" width="220" height="42" rx="21" fill="#6E1825" opacity="0.1" />
-            <text x="110" y="27" font-family="'Plus Jakarta Sans', sans-serif" font-size="15" font-weight="700" fill="#6E1825" text-anchor="middle" letter-spacing="2">SÍNTESIS</text>
+        // Synopsis, Highlights, CTA
+        contentSvg = `
+          <g transform="translate(80, 100)">
+            <rect x="0" y="0" width="240" height="44" rx="22" fill="#5c091c" opacity="0.1" />
+            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#5c091c" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
           </g>
 
-          <foreignObject x="80" y="200" width="${width - 160}" height="180">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Playfair Display',serif; font-size:48px; font-weight:700; color:#1F1B18; line-height:1.2;">
-              ${escapeHtml(slide.title)}
+          <foreignObject x="80" y="180" width="${width - 160}" height="180">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:48px; font-weight:700; color:#1B1C15; line-height:1.2;">
+              ${escapeXml(slide.title)}
             </div>
           </foreignObject>
 
-          <rect x="70" y="360" width="${width - 140}" height="560" rx="26" fill="#FFFFFF" stroke="#E8E2D5" stroke-width="1.5" />
+          <rect x="70" y="350" width="${width - 140}" height="570" rx="26" fill="#FFFFFF" stroke="#DDDCD1" stroke-width="1.5" />
 
-          <foreignObject x="110" y="420" width="${width - 220}" height="420">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Plus Jakarta Sans',sans-serif; font-size:32px; font-weight:400; color:#292524; line-height:1.6;">
-              ${escapeHtml(slide.body)}
+          <foreignObject x="120" y="420" width="${width - 240}" height="420">
+            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Public Sans',sans-serif; font-size:32px; font-weight:400; color:#1B1C15; line-height:1.65;">
+              ${escapeXml(slide.body)}
             </div>
           </foreignObject>
         `;
       }
 
-      const footer = `
+      // Footer común con branding de la librería
+      const footerSvg = `
         <g transform="translate(80, ${height - 90})">
-          <line x1="0" y1="0" x2="${width - 160}" y2="0" stroke="#6E1825" stroke-width="2" opacity="0.2" />
-          <text x="0" y="40" font-family="'Plus Jakarta Sans', sans-serif" font-size="22" font-weight="800" fill="#6E1825">LIBRERIA CENTRAL</text>
-          <text x="0" y="66" font-family="'Plus Jakarta Sans', sans-serif" font-size="18" fill="#78716C">@librerias_central</text>
+          <line x1="0" y1="0" x2="${width - 160}" y2="0" stroke="#5c091c" stroke-width="2" opacity="0.2" />
+          <text x="0" y="40" font-family="'Newsreader', serif" font-size="24" font-weight="800" fill="#5c091c">LIBRERÍAS CENTRAL</text>
+          <text x="0" y="68" font-family="'Public Sans', sans-serif" font-size="18" fill="#5C5D53">@librerias_central • Red Editorial</text>
           
-          <rect x="${width - 270}" y="15" width="110" height="42" rx="21" fill="#6E1825" opacity="0.1" />
-          <text x="${width - 215}" y="42" font-family="'Plus Jakarta Sans', sans-serif" font-size="20" font-weight="700" fill="#6E1825" text-anchor="middle">
+          <rect x="${width - 270}" y="15" width="110" height="42" rx="21" fill="#5c091c" opacity="0.1" />
+          <text x="${width - 215}" y="42" font-family="'Public Sans', sans-serif" font-size="18" font-weight="700" fill="#5c091c" text-anchor="middle">
             ${currentSlide + 1} / 5 ${currentSlide < 4 ? '→' : '✓'}
           </text>
         </g>
       `;
 
-      const svg = `
+      const fullSvg = `
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">
           <rect width="${width}" height="${height}" fill="#FAF7F2" />
-          ${inner}
-          ${footer}
+          ${contentSvg}
+          ${footerSvg}
         </svg>
       `;
 
-      document.getElementById('slideContent').innerHTML = svg;
-      document.getElementById('slideIndexLabel').textContent = `Diapositiva ${currentSlide + 1} de 5`;
+      document.getElementById('svgSlideViewport').innerHTML = fullSvg;
+      
+      const labels = [
+        "Diapositiva 1 de 5 • Portada & Gancho",
+        "Diapositiva 2 de 5 • Cita Destacada",
+        "Diapositiva 3 de 5 • La Premisa / Sinopsis",
+        "Diapositiva 4 de 5 • Veredicto Librero",
+        "Diapositiva 5 de 5 • Disponibilidad & Red"
+      ];
+      document.getElementById('slideIndexText').textContent = labels[currentSlide];
 
-      const dots = document.getElementById('dotsContainer').children;
+      // Update dots
+      const dots = document.getElementById('carouselDotsBar').children;
       for (let i = 0; i < dots.length; i++) {
-        dots[i].className = i === currentSlide ? "w-2.5 h-2.5 rounded-full bg-burgundy-700" : "w-2.5 h-2.5 rounded-full bg-stone-300";
+        dots[i].className = i === currentSlide ? "w-3 h-3 rounded-full bg-primary shadow-xs transition-all" : "w-2.5 h-2.5 rounded-full bg-border-strong hover:bg-text-secondary transition-all";
       }
 
-      document.getElementById('editSlideNum').textContent = currentSlide + 1;
-      document.getElementById('editTitleInput').value = slide.title || '';
-      document.getElementById('editBodyInput').value = slide.body || slide.quote || '';
+      // Populate Quick Editor
+      document.getElementById('editorSlideNum').textContent = currentSlide + 1;
+      document.getElementById('quickEditTitle').value = slide.title || '';
+      document.getElementById('quickEditBody').value = slide.type === 'quote' ? (slide.quote || '') : (slide.body || '');
     }
 
+    // NAVEGACION DE SLIDES
     function prevSlide() {
       if (!carouselData) return;
       currentSlide = (currentSlide - 1 + carouselData.slides.length) % carouselData.slides.length;
@@ -686,31 +1174,21 @@
       renderFeedSlide();
     }
 
-    function updateActiveSlide() {
+    function handleQuickEdit() {
       if (!carouselData) return;
       const slide = carouselData.slides[currentSlide];
-      slide.title = document.getElementById('editTitleInput').value;
+      slide.title = document.getElementById('quickEditTitle').value;
       if (slide.type === 'quote') {
-        slide.quote = document.getElementById('editBodyInput').value;
+        slide.quote = document.getElementById('quickEditBody').value;
       } else {
-        slide.body = document.getElementById('editBodyInput').value;
+        slide.body = document.getElementById('quickEditBody').value;
       }
       renderFeedSlide();
     }
 
-    function copyCaptionText() {
-      if (!carouselData) return;
-      navigator.clipboard.writeText(carouselData.caption).then(() => {
-        alert('¡Caption copiado al portapapeles!');
-      });
-    }
-
-    function publishToInstagram() {
-      alert('¡Carrusel enviado exitosamente a Instagram (@librerias_central) y canales de cadena!');
-    }
-
-    function downloadCurrentSvg() {
-      const svgElement = document.getElementById('slideContent').querySelector('svg');
+    // ACCIONES DE DESCARGA, COPIAR Y PUBLICAR
+    function downloadActiveSlideSvg() {
+      const svgElement = document.getElementById('svgSlideViewport').querySelector('svg');
       if (!svgElement) return;
       const serializer = new XMLSerializer();
       const svgString = serializer.serializeToString(svgElement);
@@ -718,15 +1196,41 @@
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `carrusel-slide-${currentSlide + 1}.svg`;
+      link.download = `carrusel-${carouselData.book.title.toLowerCase().replace(/\s+/g, '-')}-slide-${currentSlide + 1}.svg`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
     }
 
-    function escapeHtml(t) {
+    function copyInstagramCaption() {
+      if (!carouselData) return;
+      navigator.clipboard.writeText(carouselData.caption).then(() => {
+        alert('¡Pie de foto y hashtags copiados exitosamente para Instagram!');
+      });
+    }
+
+    function publishToNetwork() {
+      alert('🚀 ¡Carrusel enviado al orquestador n8n! Publicando simultáneamente en Instagram (@librerias_central), Facebook y WhatsApp en las 8 sucursales.');
+    }
+
+    // MODAL DE AJUSTES
+    function toggleSettingsModal(show) {
+      const modal = document.getElementById('settingsModal');
+      if (show) {
+        modal.classList.remove('hidden');
+      } else {
+        modal.classList.add('hidden');
+      }
+    }
+
+    function saveSettings() {
+      toggleSettingsModal(false);
+      alert('Configuración de sucursal y webhook n8n guardada.');
+    }
+
+    function escapeXml(t) {
       if (!t) return '';
-      return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+      return t.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
     }
   </script>
 </body>
