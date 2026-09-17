@@ -1,4 +1,4 @@
-﻿version: '3.8'
+version: '3.8'
 
 services:
   # 1. Base de datos PostgreSQL
@@ -51,6 +51,15 @@ services:
       - "3001:3001"
     environment:
       - PORT=3001
+      - R2_ACCOUNT_ID=${R2_ACCOUNT_ID:-}
+      - R2_ACCESS_KEY_ID=${R2_ACCESS_KEY_ID:-}
+      - R2_SECRET_ACCESS_KEY=${R2_SECRET_ACCESS_KEY:-}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME:-book-carousels}
+      - R2_PUBLIC_DOMAIN=${R2_PUBLIC_DOMAIN:-}
+      - S3_ENDPOINT=${S3_ENDPOINT:-}
+      - S3_ACCESS_KEY_ID=${S3_ACCESS_KEY_ID:-}
+      - S3_SECRET_ACCESS_KEY=${S3_SECRET_ACCESS_KEY:-}
+      - S3_BUCKET=${S3_BUCKET:-book-carousels}
     restart: unless-stopped
 
   # 4. Frontend Web para Librerías
