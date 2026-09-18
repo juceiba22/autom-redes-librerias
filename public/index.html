@@ -1642,6 +1642,16 @@
       const progressText = document.getElementById('publishStatusText');
       const confirmBtn = document.getElementById('btnConfirmPublish');
 
+      // 1. Control Anti-Spam de Instagram: verificar tiempo transcurrido desde la última publicación
+      const lastPub = parseInt(localStorage.getItem('lastPublishTimestamp') || '0', 10);
+      const elapsedSeconds = Math.round((Date.now() - lastPub) / 1000);
+      if (lastPub > 0 && elapsedSeconds < 60) {
+        const proceed = confirm(`⚠️ Control Anti-Spam de Instagram:\n\nHas realizado una publicación hace apenas ${elapsedSeconds} segundos.\n\nHacer publicaciones continuas en ráfaga (menos de 1 minuto) puede activar los filtros de spam del algoritmo de Meta o reducir el alcance orgánico de tu cuenta.\n\n¿Deseas continuar con la publicación de todas formas?`);
+        if (!proceed) {
+          return;
+        }
+      }
+
       progressBox.classList.remove('hidden');
       confirmBtn.disabled = true;
 
@@ -1650,7 +1660,7 @@
       // MODO 1: PUBLICACIÓN DIRECTA CON META GRAPH API (Si se ingresó Token y IG_USER_ID)
       if (APP_CONFIG.igUserId && APP_CONFIG.accessToken) {
         try {
-          progressText.textContent = "1/4 Preparando diapositivas...";
+          progressText.textContent = "1/4 Preparando diapositivas del carrusel...";
           
           let slideUrls = [];
 
@@ -1705,7 +1715,7 @@
             ];
           }
 
-          progressText.textContent = `2/4 Creando ${slideUrls.length} contenedores en Instagram...`;
+          progressText.textContent = `2/4 Creando ${slideUrls.length} contenedores de slides en Instagram...`;
           const containerIds = [];
           for (let i = 0; i < slideUrls.length; i++) {
             progressText.textContent = `2/4 Creando slide ${i + 1}/${slideUrls.length} en Instagram...`;
@@ -1716,9 +1726,11 @@
               throw new Error(dataItem.error.message || 'Error al crear item container');
             }
             containerIds.push(dataItem.id);
+            // Breve intervalo para evitar saturación de peticiones a la API
+            await new Promise(r => setTimeout(r, 600));
           }
 
-          progressText.textContent = "3/4 Creando contenedor de carrusel con pie de foto...";
+          progressText.textContent = "3/4 Creando contenedor de carrusel en Meta...";
           const carouselUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?media_type=CAROUSEL&children=${containerIds.join(',')}&caption=${encodeURIComponent(caption)}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
           const resCar = await fetch(carouselUrl, { method: 'POST' });
           const dataCar = await resCar.json();
@@ -1726,13 +1738,46 @@
             throw new Error(dataCar.error.message || 'Error al crear carrusel');
           }
 
-          progressText.textContent = "4/4 Publicando en tu feed de Instagram...";
+          // PASO CRÍTICO: Esperar a que Instagram procese todas las imágenes (status_code === 'FINISHED')
+          progressText.textContent = "3/4 Esperando que Instagram procese y valide las imágenes...";
+          let isReady = false;
+          let attempts = 0;
+          const maxAttempts = 15; // Hasta 30 segundos de espera activa
+
+          while (!isReady && attempts < maxAttempts) {
+            attempts++;
+            await new Promise(r => setTimeout(r, 2000));
+
+            const statusUrl = `https://graph.facebook.com/v20.0/${dataCar.id}?fields=status_code,status&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
+            const resStatus = await fetch(statusUrl);
+            const dataStatus = await resStatus.json();
+
+            if (dataStatus.status_code === 'FINISHED') {
+              isReady = true;
+            } else if (dataStatus.status_code === 'ERROR') {
+              throw new Error('Instagram no pudo procesar las imágenes del carrusel. Verifica que sean imágenes JPG/PNG accesibles.');
+            } else if (dataStatus.status_code === 'EXPIRED') {
+              throw new Error('El contenedor del carrusel expiró en los servidores de Instagram.');
+            } else {
+              progressText.textContent = `3/4 Instagram procesando imágenes (validación ${attempts}/${maxAttempts})...`;
+            }
+          }
+
+          if (!isReady) {
+            // Margen final de seguridad si status_code no estuviera disponible
+            await new Promise(r => setTimeout(r, 2500));
+          }
+
+          progressText.textContent = "4/4 Publicando carrusel en tu feed de Instagram...";
           const publishUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media_publish?creation_id=${dataCar.id}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
           const resPub = await fetch(publishUrl, { method: 'POST' });
           const dataPub = await resPub.json();
           if (dataPub.error) {
             throw new Error(dataPub.error.message || 'Error al publicar carrusel');
           }
+
+          // Registrar timestamp para el control anti-spam
+          localStorage.setItem('lastPublishTimestamp', Date.now().toString());
 
           progressText.textContent = "✓ ¡Publicación exitosa en Instagram!";
           setTimeout(() => {
