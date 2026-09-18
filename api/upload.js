@@ -31,21 +31,29 @@ module.exports = async function handler(req, res) {
       r2Config = {}
     } = req.body || {};
 
-    const accountId = r2Config.accountId || process.env.R2_ACCOUNT_ID;
-    const accessKeyId = r2Config.accessKeyId || process.env.R2_ACCESS_KEY_ID;
-    const secretAccessKey = r2Config.secretAccessKey || process.env.R2_SECRET_ACCESS_KEY;
-    const bucketName = r2Config.bucketName || process.env.R2_BUCKET_NAME || 'book-carousels';
-    const publicDomain = (r2Config.publicDomain || process.env.R2_PUBLIC_DOMAIN || '').replace(/\/+$/, '');
+    // Sanitizar Account ID para evitar duplicación de https:// o .r2.cloudflarestorage.com
+    const rawAccountId = (r2Config.accountId || process.env.R2_ACCOUNT_ID || '').trim();
+    const cleanAccountId = rawAccountId
+      .replace(/^https?:\/\//i, '')
+      .replace(/\.r2\.cloudflarestorage\.com.*$/i, '')
+      .replace(/\/+$/, '');
 
-    if (!accountId || !accessKeyId || !secretAccessKey) {
+    const accessKeyId = (r2Config.accessKeyId || process.env.R2_ACCESS_KEY_ID || '').trim();
+    const secretAccessKey = (r2Config.secretAccessKey || process.env.R2_SECRET_ACCESS_KEY || '').trim();
+    const bucketName = (r2Config.bucketName || process.env.R2_BUCKET_NAME || 'book-carousels').trim();
+    const publicDomain = (r2Config.publicDomain || process.env.R2_PUBLIC_DOMAIN || '').trim().replace(/\/+$/, '');
+
+    if (!cleanAccountId || !accessKeyId || !secretAccessKey) {
       return res.status(400).json({
         error: 'Credenciales incompletas de Cloudflare R2 (se requiere Account ID, Access Key ID y Secret Access Key).'
       });
     }
 
+    const endpoint = `https://${cleanAccountId}.r2.cloudflarestorage.com`;
+
     const s3 = new S3Client({
       region: 'auto',
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
+      endpoint,
       credentials: {
         accessKeyId,
         secretAccessKey
@@ -64,7 +72,7 @@ module.exports = async function handler(req, res) {
 
       const testUrl = publicDomain
         ? `${publicDomain}/${testKey}`
-        : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${testKey}`;
+        : `${endpoint}/${bucketName}/${testKey}`;
 
       return res.status(200).json({
         success: true,
@@ -92,7 +100,7 @@ module.exports = async function handler(req, res) {
 
     const finalUrl = publicDomain
       ? `${publicDomain}/${safeKey}`
-      : `https://${accountId}.r2.cloudflarestorage.com/${bucketName}/${safeKey}`;
+      : `${endpoint}/${bucketName}/${safeKey}`;
 
     return res.status(200).json({
       success: true,

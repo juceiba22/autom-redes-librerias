@@ -722,15 +722,19 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 3: WEBHOOKS N8N (ORQUESTADOR EN RAILWAY) -->
+        <!-- SECCIÓN 3: WEBHOOKS N8N (OPCIONAL / AUTOMATIZACIÓN EN SERVIDOR) -->
         <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="font-bold text-text-primary flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px]">alt_route</span>
-              Webhooks de n8n (Orquestador Railway)
+              Webhooks de n8n (Opcional - Automatización Desatendida)
             </span>
-            <span class="text-[10px] font-mono text-status-success font-semibold">Producción</span>
+            <span class="text-[10px] font-mono text-text-muted bg-white px-2 py-0.5 rounded border border-border-subtle">Opcional</span>
           </div>
+
+          <p class="text-[11px] text-text-muted leading-relaxed">
+            💡 <em>Para publicar en Instagram hoy <strong>no necesitas n8n</strong>. La web publica directo a tu cuenta con tu Meta Access Token. Los webhooks de n8n son solo si deseas que un robot en la nube cree o publique posts de forma automática y programada.</em>
+          </p>
 
           <div>
             <label class="block font-bold text-text-secondary mb-1">1. Webhook de Generación con IA (<span class="font-mono font-normal">Claude 3.5</span>)</label>
@@ -1529,8 +1533,15 @@
       feedback.textContent = "Probando conexión...";
       feedback.className = "text-[11px] text-primary font-medium animate-pulse";
 
+      const rawAccountId = document.getElementById('cfgR2AccountId').value.trim();
+      const cleanAccountId = rawAccountId
+        .replace(/^https?:\/\//i, '')
+        .replace(/\.r2\.cloudflarestorage\.com.*$/i, '')
+        .replace(/\/+$/, '');
+      document.getElementById('cfgR2AccountId').value = cleanAccountId;
+
       const r2Config = {
-        accountId: document.getElementById('cfgR2AccountId').value.trim(),
+        accountId: cleanAccountId,
         accessKeyId: document.getElementById('cfgR2AccessKeyId').value.trim(),
         secretAccessKey: document.getElementById('cfgR2SecretAccessKey').value.trim(),
         bucketName: document.getElementById('cfgR2BucketName').value.trim() || 'book-carousels',
@@ -1733,7 +1744,13 @@
       APP_CONFIG.accessToken = document.getElementById('cfgAccessToken').value.trim();
       APP_CONFIG.webhookGenerate = document.getElementById('cfgWebhookUrl').value.trim();
       APP_CONFIG.webhookPublish = document.getElementById('cfgPublishWebhookUrl').value.trim();
-      APP_CONFIG.r2AccountId = document.getElementById('cfgR2AccountId').value.trim();
+      const rawAccountId = document.getElementById('cfgR2AccountId').value.trim();
+      APP_CONFIG.r2AccountId = rawAccountId
+        .replace(/^https?:\/\//i, '')
+        .replace(/\.r2\.cloudflarestorage\.com.*$/i, '')
+        .replace(/\/+$/, '');
+      document.getElementById('cfgR2AccountId').value = APP_CONFIG.r2AccountId;
+
       APP_CONFIG.r2AccessKeyId = document.getElementById('cfgR2AccessKeyId').value.trim();
       APP_CONFIG.r2SecretAccessKey = document.getElementById('cfgR2SecretAccessKey').value.trim();
       APP_CONFIG.r2BucketName = document.getElementById('cfgR2BucketName').value.trim() || 'book-carousels';
