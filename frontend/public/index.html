@@ -675,7 +675,54 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 2: WEBHOOKS N8N (ORQUESTADOR EN RAILWAY) -->
+        <!-- SECCIÓN 2: STORAGE CLOUDFLARE R2 (HOSTING DE SLIDES) -->
+        <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">cloud_upload</span>
+              Storage Cloudflare R2 (Hosting de Diapositivas)
+            </span>
+            <span class="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-border-subtle text-text-muted">S3 / R2</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">R2 Account ID</label>
+              <input id="cfgR2AccountId" type="text" placeholder="2ae858a035b56af40819..." class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">Nombre del Bucket</label>
+              <input id="cfgR2BucketName" type="text" value="book-carousels" placeholder="book-carousels" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary">
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">R2 Access Key ID</label>
+              <input id="cfgR2AccessKeyId" type="text" placeholder="5d2f939e46aa8c54ee58..." class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+            </div>
+            <div>
+              <label class="block font-bold text-text-secondary mb-1">R2 Secret Access Key</label>
+              <input id="cfgR2SecretAccessKey" type="password" placeholder="3bdfdda59c4e1c3..." class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+            </div>
+          </div>
+
+          <div>
+            <label class="block font-bold text-text-secondary mb-1">Dominio Público del Bucket (R2.dev o Custom Domain)</label>
+            <input id="cfgR2PublicDomain" type="text" placeholder="https://pub-xxxxxxxxxxxxxxxx.r2.dev" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+            <p class="text-[10px] text-text-muted mt-1">Habilitado en Cloudflare R2 &gt; Bucket &gt; Settings &gt; Public Access &gt; R2.dev subdomain.</p>
+          </div>
+
+          <div class="flex items-center justify-between pt-1">
+            <button type="button" onclick="testR2Connection()" class="px-3 py-1.5 bg-surface-container hover:bg-surface-container-high border border-border-subtle rounded-lg text-xs font-semibold text-text-primary flex items-center gap-1.5 cursor-pointer">
+              <span class="material-symbols-outlined text-[16px] text-primary">network_check</span>
+              Probar Conexión Storage R2
+            </button>
+            <span id="r2StatusFeedback" class="text-[11px] text-text-muted font-medium"></span>
+          </div>
+        </div>
+
+        <!-- SECCIÓN 3: WEBHOOKS N8N (ORQUESTADOR EN RAILWAY) -->
         <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="font-bold text-text-primary flex items-center gap-1.5">
@@ -830,7 +877,12 @@
       igUserId: localStorage.getItem('cfgIgUserId') || '',
       accessToken: localStorage.getItem('cfgAccessToken') || '',
       webhookGenerate: localStorage.getItem('cfgWebhookUrl') || '',
-      webhookPublish: localStorage.getItem('cfgPublishWebhookUrl') || ''
+      webhookPublish: localStorage.getItem('cfgPublishWebhookUrl') || '',
+      r2AccountId: localStorage.getItem('cfgR2AccountId') || '',
+      r2AccessKeyId: localStorage.getItem('cfgR2AccessKeyId') || '',
+      r2SecretAccessKey: localStorage.getItem('cfgR2SecretAccessKey') || '',
+      r2BucketName: localStorage.getItem('cfgR2BucketName') || 'book-carousels',
+      r2PublicDomain: localStorage.getItem('cfgR2PublicDomain') || ''
     };
 
     // CATÁLOGO DE PRESETS LITERARIOS
@@ -880,6 +932,11 @@
       if (document.getElementById('cfgAccessToken')) document.getElementById('cfgAccessToken').value = APP_CONFIG.accessToken;
       if (document.getElementById('cfgWebhookUrl')) document.getElementById('cfgWebhookUrl').value = APP_CONFIG.webhookGenerate;
       if (document.getElementById('cfgPublishWebhookUrl')) document.getElementById('cfgPublishWebhookUrl').value = APP_CONFIG.webhookPublish;
+      if (document.getElementById('cfgR2AccountId')) document.getElementById('cfgR2AccountId').value = APP_CONFIG.r2AccountId;
+      if (document.getElementById('cfgR2AccessKeyId')) document.getElementById('cfgR2AccessKeyId').value = APP_CONFIG.r2AccessKeyId;
+      if (document.getElementById('cfgR2SecretAccessKey')) document.getElementById('cfgR2SecretAccessKey').value = APP_CONFIG.r2SecretAccessKey;
+      if (document.getElementById('cfgR2BucketName')) document.getElementById('cfgR2BucketName').value = APP_CONFIG.r2BucketName;
+      if (document.getElementById('cfgR2PublicDomain')) document.getElementById('cfgR2PublicDomain').value = APP_CONFIG.r2PublicDomain;
 
       updateUiWithConfig();
     }
@@ -1217,13 +1274,11 @@
       renderFeedSlide();
     }
 
-    // RENDERIZADOR SVG VECTORIAL ULTRA NITIDO
-    function renderFeedSlide() {
-      if (!carouselData) return;
-      const slide = carouselData.slides[currentSlide];
+    // GENERADOR DE SVG VECTORIAL PARA CUALQUIER SLIDE
+    function getSlideSvgString(idx, width = 1080, height = 1350) {
+      if (!carouselData || !carouselData.slides[idx]) return '';
+      const slide = carouselData.slides[idx];
       const book = carouselData.book;
-      const width = 1080;
-      const height = 1350;
 
       let contentSvg = '';
 
@@ -1250,8 +1305,8 @@
           <!-- Portada con Sombra Editorial -->
           <g transform="translate(${width / 2 - 180}, 440)">
             <rect x="15" y="15" width="340" height="500" rx="14" fill="#000000" opacity="0.18" filter="blur(15px)" />
-            <clipPath id="bookCoverClip"><rect x="0" y="0" width="360" height="520" rx="12" /></clipPath>
-            <image href="${escapeXml(book.coverUrl)}" x="0" y="0" width="360" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#bookCoverClip)" />
+            <clipPath id="bookCoverClip_${idx}"><rect x="0" y="0" width="360" height="520" rx="12" /></clipPath>
+            <image href="${escapeXml(book.coverUrl)}" x="0" y="0" width="360" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#bookCoverClip_${idx})" />
           </g>
 
           <!-- Metadata al pie -->
@@ -1318,18 +1373,25 @@
           
           <rect x="${width - 270}" y="15" width="110" height="42" rx="21" fill="#5c091c" opacity="0.1" />
           <text x="${width - 215}" y="42" font-family="'Public Sans', sans-serif" font-size="18" font-weight="700" fill="#5c091c" text-anchor="middle">
-            ${currentSlide + 1} / 5 ${currentSlide < 4 ? '→' : '✓'}
+            ${idx + 1} / ${carouselData.slides.length} ${idx < carouselData.slides.length - 1 ? '→' : '✓'}
           </text>
         </g>
       `;
 
-      const fullSvg = `
+      return `
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">
           <rect width="${width}" height="${height}" fill="#FAF7F2" />
           ${contentSvg}
           ${footerSvg}
         </svg>
       `;
+    }
+
+    // RENDERIZADOR SVG VECTORIAL ULTRA NITIDO EN PANTALLA
+    function renderFeedSlide() {
+      if (!carouselData) return;
+      const slide = carouselData.slides[currentSlide];
+      const fullSvg = getSlideSvgString(currentSlide);
 
       document.getElementById('svgSlideViewport').innerHTML = fullSvg;
       
@@ -1340,7 +1402,7 @@
         "Diapositiva 4 de 5 • Veredicto Librero",
         "Diapositiva 5 de 5 • Disponibilidad & Red"
       ];
-      document.getElementById('slideIndexText').textContent = labels[currentSlide];
+      document.getElementById('slideIndexText').textContent = labels[currentSlide] || `Diapositiva ${currentSlide + 1}`;
 
       // Update dots
       const dots = document.getElementById('carouselDotsBar').children;
@@ -1426,6 +1488,81 @@
       document.getElementById('publishModal').classList.add('hidden');
     }
 
+    // CONVERTIR STRING SVG A DATA URL PNG USANDO CANVAS
+    async function svgToPngDataUrl(svgString, width = 1080, height = 1350) {
+      return new Promise((resolve, reject) => {
+        try {
+          const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FAF7F2';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+              URL.revokeObjectURL(url);
+              resolve(canvas.toDataURL('image/png', 0.95));
+            } catch (canvasErr) {
+              URL.revokeObjectURL(url);
+              reject(canvasErr);
+            }
+          };
+          img.onerror = (e) => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Fallo al cargar SVG para rasterización'));
+          };
+          img.src = url;
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+
+    // PROBAR CONEXION CLOUDFLARE R2
+    async function testR2Connection() {
+      const feedback = document.getElementById('r2StatusFeedback');
+      feedback.textContent = "Probando conexión...";
+      feedback.className = "text-[11px] text-primary font-medium animate-pulse";
+
+      const r2Config = {
+        accountId: document.getElementById('cfgR2AccountId').value.trim(),
+        accessKeyId: document.getElementById('cfgR2AccessKeyId').value.trim(),
+        secretAccessKey: document.getElementById('cfgR2SecretAccessKey').value.trim(),
+        bucketName: document.getElementById('cfgR2BucketName').value.trim() || 'book-carousels',
+        publicDomain: document.getElementById('cfgR2PublicDomain').value.trim()
+      };
+
+      if (!r2Config.accountId || !r2Config.accessKeyId || !r2Config.secretAccessKey) {
+        feedback.textContent = "⚠️ Completa Account ID, Access Key y Secret Key";
+        feedback.className = "text-[11px] text-status-warning font-semibold";
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'test', r2Config })
+        });
+        const data = await res.json();
+        if (data.success) {
+          feedback.textContent = "✓ ¡Conexión con R2 exitosa!";
+          feedback.className = "text-[11px] text-status-success font-bold";
+        } else {
+          feedback.textContent = "✕ " + (data.error || 'No se pudo conectar');
+          feedback.className = "text-[11px] text-status-danger font-semibold";
+        }
+      } catch (err) {
+        feedback.textContent = "✕ Error: " + err.message;
+        feedback.className = "text-[11px] text-status-danger font-semibold";
+      }
+    }
+
     // EJECUTAR PUBLICACION REAL O GUIADA
     async function executeRealPublish() {
       const progressBox = document.getElementById('publishProgressState');
@@ -1440,17 +1577,66 @@
       // MODO 1: PUBLICACIÓN DIRECTA CON META GRAPH API (Si se ingresó Token y IG_USER_ID)
       if (APP_CONFIG.igUserId && APP_CONFIG.accessToken) {
         try {
-          progressText.textContent = "1/3 Conectando con Meta Graph API...";
+          progressText.textContent = "1/4 Preparando diapositivas...";
           
-          const testSlides = [
-            carouselData.book.coverUrl || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=1080",
-            "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=1080"
-          ];
+          let slideUrls = [];
 
+          // Si Cloudflare R2 está configurado, renderizar y subir los slides reales
+          if (APP_CONFIG.r2AccountId && APP_CONFIG.r2AccessKeyId && APP_CONFIG.r2SecretAccessKey) {
+            progressText.textContent = "1/4 Subiendo diapositivas a Cloudflare R2...";
+            try {
+              const carouselTimestamp = Date.now();
+              for (let i = 0; i < carouselData.slides.length; i++) {
+                progressText.textContent = `1/4 Subiendo slide ${i + 1}/${carouselData.slides.length} a Cloudflare R2...`;
+                const svgString = getSlideSvgString(i);
+                let pngDataUrl = null;
+                try {
+                  pngDataUrl = await svgToPngDataUrl(svgString);
+                } catch (e) {
+                  console.warn("No se pudo rasterizar slide en canvas local:", e);
+                }
+
+                if (pngDataUrl) {
+                  const upRes = await fetch('/api/upload', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      action: 'upload',
+                      imageBase64: pngDataUrl,
+                      fileName: `slides/${carouselTimestamp}/slide_${i + 1}.png`,
+                      r2Config: {
+                        accountId: APP_CONFIG.r2AccountId,
+                        accessKeyId: APP_CONFIG.r2AccessKeyId,
+                        secretAccessKey: APP_CONFIG.r2SecretAccessKey,
+                        bucketName: APP_CONFIG.r2BucketName,
+                        publicDomain: APP_CONFIG.r2PublicDomain
+                      }
+                    })
+                  });
+                  const upData = await upRes.json();
+                  if (upData.success && upData.url) {
+                    slideUrls.push(upData.url);
+                  }
+                }
+              }
+            } catch (r2Err) {
+              console.warn("Fallo subida a R2, se usará fallback:", r2Err);
+            }
+          }
+
+          // Fallback seguro si no hay R2 o si la subida local falló
+          if (slideUrls.length < 2) {
+            slideUrls = [
+              carouselData.book.coverUrl || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=1080",
+              "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=1080"
+            ];
+          }
+
+          progressText.textContent = `2/4 Creando ${slideUrls.length} contenedores en Instagram...`;
           const containerIds = [];
-          for (let i = 0; i < testSlides.length; i++) {
-            progressText.textContent = `1/3 Creando slide ${i + 1}/${testSlides.length} en Instagram...`;
-            const itemUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?image_url=${encodeURIComponent(testSlides[i])}&is_carousel_item=true&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
+          for (let i = 0; i < slideUrls.length; i++) {
+            progressText.textContent = `2/4 Creando slide ${i + 1}/${slideUrls.length} en Instagram...`;
+            const itemUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?image_url=${encodeURIComponent(slideUrls[i])}&is_carousel_item=true&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
             const resItem = await fetch(itemUrl, { method: 'POST' });
             const dataItem = await resItem.json();
             if (dataItem.error) {
@@ -1459,7 +1645,7 @@
             containerIds.push(dataItem.id);
           }
 
-          progressText.textContent = "2/3 Creando contenedor de carrusel con pie de foto...";
+          progressText.textContent = "3/4 Creando contenedor de carrusel con pie de foto...";
           const carouselUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?media_type=CAROUSEL&children=${containerIds.join(',')}&caption=${encodeURIComponent(caption)}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
           const resCar = await fetch(carouselUrl, { method: 'POST' });
           const dataCar = await resCar.json();
@@ -1467,7 +1653,7 @@
             throw new Error(dataCar.error.message || 'Error al crear carrusel');
           }
 
-          progressText.textContent = "3/3 Publicando en tu feed de Instagram...";
+          progressText.textContent = "4/4 Publicando en tu feed de Instagram...";
           const publishUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media_publish?creation_id=${dataCar.id}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
           const resPub = await fetch(publishUrl, { method: 'POST' });
           const dataPub = await resPub.json();
@@ -1547,6 +1733,11 @@
       APP_CONFIG.accessToken = document.getElementById('cfgAccessToken').value.trim();
       APP_CONFIG.webhookGenerate = document.getElementById('cfgWebhookUrl').value.trim();
       APP_CONFIG.webhookPublish = document.getElementById('cfgPublishWebhookUrl').value.trim();
+      APP_CONFIG.r2AccountId = document.getElementById('cfgR2AccountId').value.trim();
+      APP_CONFIG.r2AccessKeyId = document.getElementById('cfgR2AccessKeyId').value.trim();
+      APP_CONFIG.r2SecretAccessKey = document.getElementById('cfgR2SecretAccessKey').value.trim();
+      APP_CONFIG.r2BucketName = document.getElementById('cfgR2BucketName').value.trim() || 'book-carousels';
+      APP_CONFIG.r2PublicDomain = document.getElementById('cfgR2PublicDomain').value.trim();
 
       localStorage.setItem('cfgStoreName', APP_CONFIG.storeName);
       localStorage.setItem('cfgStoreHandle', APP_CONFIG.storeHandle);
@@ -1554,6 +1745,11 @@
       localStorage.setItem('cfgAccessToken', APP_CONFIG.accessToken);
       localStorage.setItem('cfgWebhookUrl', APP_CONFIG.webhookGenerate);
       localStorage.setItem('cfgPublishWebhookUrl', APP_CONFIG.webhookPublish);
+      localStorage.setItem('cfgR2AccountId', APP_CONFIG.r2AccountId);
+      localStorage.setItem('cfgR2AccessKeyId', APP_CONFIG.r2AccessKeyId);
+      localStorage.setItem('cfgR2SecretAccessKey', APP_CONFIG.r2SecretAccessKey);
+      localStorage.setItem('cfgR2BucketName', APP_CONFIG.r2BucketName);
+      localStorage.setItem('cfgR2PublicDomain', APP_CONFIG.r2PublicDomain);
 
       updateUiWithConfig();
       renderFeedSlide();

@@ -4,5 +4,8 @@
   "description": "Automatizacion de Carruseles de Libros para Librerias",
   "scripts": {
     "build": "echo Static deployment ready"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "^3.650.0"
   }
 }
