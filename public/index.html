@@ -194,7 +194,7 @@
             <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
             Orquestador Editorial IA • 8 sedes conectadas
           </span>
-          <span class="text-text-muted text-xs hidden sm:inline">Nodo n8n #CORR-04 • Claude 3.5 Sonnet • Meta Graph API v20.0</span>
+          <span class="text-text-muted text-xs hidden sm:inline">Nodo n8n #CORR-04 • Claude • Meta Graph API v20.0</span>
         </div>
         <h1 class="font-serif text-3xl sm:text-4xl lg:text-[42px] lg:leading-[48px] font-bold text-text-primary tracking-tight mt-1">
           Transforma cualquier reseña en contenido editorial
@@ -348,7 +348,7 @@
               <div class="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
               <div>
                 <p id="aiBannerTitle" class="text-xs font-bold text-text-primary">Orquestando pipeline editorial...</p>
-                <p id="aiBannerSubtitle" class="text-[11px] text-text-secondary">Claude 3.5 Sonnet sintetiza conceptos y maqueta tipografía Newsreader</p>
+                <p id="aiBannerSubtitle" class="text-[11px] text-text-secondary">Claude sintetiza conceptos y maqueta tipografía Newsreader</p>
               </div>
             </div>
             <span id="aiBannerStep" class="text-xs font-bold font-mono text-primary bg-white px-2 py-1 rounded shadow-xs">Paso 1/4</span>
@@ -415,7 +415,7 @@
               </span>
             </div>
             <span class="px-2 py-0.5 rounded bg-surface-container-high text-[11px] font-mono text-text-secondary">
-              Motor IA v4.2 • Claude 3.5 Sonnet
+              Motor IA v4.2 • Claude
             </span>
           </div>
 
@@ -610,7 +610,7 @@
                 <span class="w-4 h-4 rounded-full bg-primary-container text-white font-bold text-[9px] flex items-center justify-center z-10">2</span>
                 <div>
                   <p class="font-bold text-text-primary">Síntesis y diagramación IA</p>
-                  <p class="text-[11px] text-text-secondary">Claude 3.5 Sonnet estructura argumentos y tipografía.</p>
+                  <p class="text-[11px] text-text-secondary">Claude estructura argumentos y tipografía.</p>
                 </div>
               </div>
 
@@ -778,7 +778,7 @@
           <div class="flex items-center justify-between">
             <span class="font-bold text-text-primary flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[18px]">psychology</span>
-              Cerebro LLM (Anthropic Claude 3.5 Sonnet Vision / n8n)
+              Cerebro LLM (Anthropic Claude Vision / n8n)
             </span>
             <span class="text-[10px] font-mono text-text-muted bg-white px-2 py-0.5 rounded border border-border-subtle">Vision & Copys</span>
           </div>
@@ -1758,8 +1758,15 @@
       if (!file) return;
 
       const reader = new FileReader();
-      reader.onload = function(evt) {
-        uploadedCoverBase64 = evt.target.result;
+      reader.onload = async function(evt) {
+        // Reducir la foto (las de celular pesan varios MB y superan el límite del servidor)
+        uploadedCoverBase64 = await compressImageDataUrl(evt.target.result);
+
+        // Vaciar los datos del libro anterior para que la IA no mezcle datos de otro libro
+        ['inputBookTitle', 'inputBookAuthor', 'inputBookGenre', 'inputBookPublisher', 'inputReviewText', 'inputBookQuote'].forEach(id => {
+          const el = document.getElementById(id);
+          if (el) el.value = '';
+        });
 
         // Mostrar vista previa en la zona de drop
         const promptState = document.getElementById('dropZonePromptState');
@@ -1775,7 +1782,7 @@
         const btnText = document.getElementById('btnTriggerAiText');
         const btnSubtext = document.getElementById('btnTriggerAiSubtext');
         if (btnText) btnText.textContent = "Generar carrusel con IA desde esta foto";
-        if (btnSubtext) btnSubtext.textContent = "Claude 3.5 Sonnet examinará la portada, redactará la reseña y maquetará los 5 slides";
+        if (btnSubtext) btnSubtext.textContent = "Claude examinará la portada, redactará la reseña y maquetará los 5 slides";
 
         // Atenuar selección de presets ya que se cargó un libro nuevo
         [1, 2, 3].forEach(idx => {
@@ -1792,6 +1799,26 @@
         }
       };
       reader.readAsDataURL(file);
+    }
+
+    // Redimensiona una imagen (data URL) a máx. 1568px de lado y la recomprime en JPEG
+    function compressImageDataUrl(dataUrl, maxSide = 1568, quality = 0.85) {
+      return new Promise(resolve => {
+        const img = new Image();
+        img.onload = () => {
+          const scale = Math.min(1, maxSide / Math.max(img.width, img.height));
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(img.width * scale);
+          canvas.height = Math.round(img.height * scale);
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#ffffff';
+          ctx.fillRect(0, 0, canvas.width, canvas.height);
+          ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+          resolve(canvas.toDataURL('image/jpeg', quality));
+        };
+        img.onerror = () => resolve(dataUrl);
+        img.src = dataUrl;
+      });
     }
 
     function liveUpdateBookData() {
@@ -1811,9 +1838,12 @@
     // DISPARADOR DE GENERACION IA CON FOTO O TEXTO
     async function executeAiGeneration() {
       const banner = document.getElementById('aiProcessingBanner');
+      // Restaurar el contenido original del banner (al terminar se reemplaza por el mensaje de éxito)
+      if (!banner.dataset.originalHtml) banner.dataset.originalHtml = banner.innerHTML;
+      banner.innerHTML = banner.dataset.originalHtml;
       banner.classList.remove('hidden');
       document.getElementById('aiBannerTitle').textContent = "Iniciando análisis multimodal...";
-      document.getElementById('aiBannerSubtitle').textContent = "Claude 3.5 Sonnet examina la portada y tipografía...";
+      document.getElementById('aiBannerSubtitle').textContent = "Claude examina la portada y tipografía...";
       document.getElementById('aiBannerStep').textContent = "Paso 1/4";
 
       const payload = {
@@ -1833,12 +1863,13 @@
       };
 
       let generatedData = null;
+      let generationError = '';
 
       // 1. Intentar con Webhook de n8n si está configurado
       if (APP_CONFIG.webhookGenerate && APP_CONFIG.webhookGenerate.startsWith('http')) {
         try {
           document.getElementById('aiBannerTitle').textContent = "Orquestando con n8n...";
-          document.getElementById('aiBannerSubtitle').textContent = "Enviando imagen a Claude 3.5 Sonnet en n8n...";
+          document.getElementById('aiBannerSubtitle').textContent = "Enviando imagen a Claude en n8n...";
           document.getElementById('aiBannerStep').textContent = "Paso 2/4";
 
           const response = await fetch(APP_CONFIG.webhookGenerate, {
@@ -1850,6 +1881,8 @@
           if (response.ok) {
             const resJson = await response.json();
             generatedData = resJson.data || resJson.book || resJson;
+          } else {
+            generationError = `El webhook de n8n respondió ${response.status}`;
           }
         } catch (err) {
           console.warn("Llamada al webhook de n8n devolvió error, probando /api/generate:", err);
@@ -1859,7 +1892,7 @@
       // 2. Si no hubo respuesta de n8n, intentar con endpoint serverless /api/generate
       if (!generatedData) {
         try {
-          document.getElementById('aiBannerTitle').textContent = "Consultando Claude 3.5 Sonnet Vision...";
+          document.getElementById('aiBannerTitle').textContent = "Consultando Claude Vision...";
           document.getElementById('aiBannerSubtitle').textContent = "Extrayendo título, autor y redactando reseña literaria...";
           document.getElementById('aiBannerStep').textContent = "Paso 2/4";
 
@@ -1876,12 +1909,16 @@
             }
           } else {
             const errData = await response.json().catch(() => ({}));
-            if (errData.error && errData.guide) {
+            generationError = errData.error || (response.status === 413
+              ? 'La foto es demasiado pesada para el servidor.'
+              : `El servidor respondió ${response.status}`);
+            if (errData.guide) {
               console.info("Info /api/generate:", errData.guide);
             }
           }
         } catch (err) {
           console.warn("Fallo en /api/generate:", err);
+          generationError = generationError || 'No se pudo conectar con el servidor de IA.';
         }
       }
 
@@ -1951,10 +1988,13 @@
           ],
           caption: generatedData.caption || `✨ Reseña destacada: "${generatedData.title || payload.bookTitle}" de ${generatedData.author || payload.bookAuthor}.\n\n📖 Desliza para descubrir la premisa sin spoilers y por qué no puedes dejar de leerlo.\n\n📍 Ejemplares disponibles en ${APP_CONFIG.storeName}.\n\n#LibrosRecomendados #Bookstagram #Lecturas2025`
         };
+      } else if (uploadedCoverBase64) {
+        // Con una foto cargada no inventamos datos: sin la IA no sabemos qué libro es
+        banner.classList.add('hidden');
+        alert("⚠️ No se pudo generar el carrusel con IA.\n\n" + (generationError || 'Error desconocido.') +
+          "\n\nRevisa tu Anthropic API Key en Ajustes (engranaje) o el webhook de n8n, o completa manualmente título, autor y reseña.");
+        return;
       } else {
-        if (uploadedCoverBase64 && (!APP_CONFIG.anthropicApiKey && !APP_CONFIG.webhookGenerate)) {
-          alert("💡 Para activar el análisis de visión automático con Claude 3.5 Sonnet:\n\nHaz clic en el engranaje ⚙️ (Ajustes) y pega tu Anthropic Claude API Key (o conecta tu webhook de n8n).\n\nMientras tanto, hemos maquetado el carrusel con la foto de tu libro.");
-        }
         liveUpdateBookData();
       }
 
