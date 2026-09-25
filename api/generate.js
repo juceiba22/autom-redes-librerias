@@ -15,13 +15,15 @@ const slideSchema = {
   type: 'object',
   properties: {
     type: { type: 'string', enum: ['cover_hook', 'quote', 'synopsis', 'highlights', 'cta'] },
-    category: { type: 'string' },
     title: { type: 'string' },
+    highlight: { type: 'string' },
     subtitle: { type: 'string' },
     body: { type: 'string' },
-    quote: { type: 'string' }
+    quote: { type: 'string' },
+    items: { type: 'array', items: { type: 'string' } },
+    fans: { type: 'string' }
   },
-  required: ['type', 'category', 'title', 'subtitle', 'body', 'quote'],
+  required: ['type', 'title', 'highlight', 'subtitle', 'body', 'quote', 'items', 'fans'],
   additionalProperties: false
 };
 
@@ -34,6 +36,7 @@ const carouselSchema = {
     publisher: { type: 'string' },
     review: { type: 'string' },
     quote: { type: 'string' },
+    style: { type: 'string', enum: ['cinematic', 'editorial'] },
     palette: {
       type: 'object',
       properties: {
@@ -47,23 +50,26 @@ const carouselSchema = {
     slides: { type: 'array', items: slideSchema },
     caption: { type: 'string' }
   },
-  required: ['title', 'author', 'genre', 'publisher', 'review', 'quote', 'palette', 'slides', 'caption'],
+  required: ['title', 'author', 'genre', 'publisher', 'review', 'quote', 'style', 'palette', 'slides', 'caption'],
   additionalProperties: false
 };
 
 function buildInstructions(storeName, storeHandle) {
-  return `Genera el contenido para las 5 diapositivas del carrusel de Instagram (proporción 4:5) de la librería "${storeName}" (${storeHandle}):
+  return `Genera el contenido de un carrusel de Instagram de 5 diapositivas para la librería "${storeName}" (${storeHandle}).
+Los textos van sobre plantillas de diseño con tipografía grande: respeta los límites de caracteres, escribe frases cortas y con fuerza, en español rioplatense (voseo) y sin spoilers.
+
 1. Título exacto, Autor(a), Género literario y Editorial (si no es visible, usa "").
-2. Una reseña literaria apasionada, magnética y sin spoilers de 250 a 350 caracteres para Bookstagram.
-3. Una cita célebre o frase representativa e inolvidable de la obra.
-4. Las 5 diapositivas, en este orden exacto (usa "" en los campos que no apliquen):
-   - Slide 1 (cover_hook): categoría "RECOMENDACIÓN EDITORIAL", título gancho de máx. 70 caracteres (ej. "¿POR QUÉ TODOS ESTÁN LEYENDO...?"), subtítulo.
-   - Slide 2 (quote): categoría "CITA INOLVIDABLE", título "LA VOZ DEL AUTOR", quote (la cita, máx. 200 caracteres), subtítulo.
-   - Slide 3 (synopsis): categoría "LA PREMISA", título "EL CORAZÓN DEL RELATO", body (síntesis argumental, máx. 240 caracteres).
-   - Slide 4 (highlights): categoría "VEREDICTO LIBRERO", título "¿POR QUÉ DEBES LEERLO HOY?", body (por qué apasiona y a quién se recomienda, máx. 240 caracteres).
-   - Slide 5 (cta): categoría "DISPONIBILIDAD", título "EN TODAS NUESTRAS SUCURSALES", body (invitación a visitar ${storeName} o pedir por DM con ${storeHandle}).
-5. Una paleta armónica basada en los colores predominantes de la tapa (colores hex: primary, accent, background).
-6. El pie de foto (caption) completo para Instagram con emojis y hashtags.
+2. review: reseña apasionada y magnética de 250 a 350 caracteres.
+3. quote: una cita de la obra o frase representativa, de máx. 140 caracteres.
+4. style: "cinematic" para thriller, policial, terror, fantasía, ciencia ficción, juvenil o acción; "editorial" para narrativa literaria, clásicos, ensayo, poesía, biografía y no ficción.
+5. slides, en este orden exacto (usa "" o [] en los campos que no apliquen):
+   - cover_hook: title = inicio del gancho sin el título del libro (máx. 35 caracteres, ej. "¿Por qué todos hablan de"); highlight = el título del libro, cerrando la pregunta si corresponde (máx. 40, ej. "La marca del psicópata?"); subtitle = máx. 50.
+   - quote: quote = la misma cita del punto 3.
+   - synopsis: title = titular editorial de la premisa (máx. 45, ej. "Una verdad enterrada bajo la piel."); items = exactamente 3 frases muy cortas que cuenten la premisa (máx. 45 caracteres cada una, ej. "Una tatuadora forense."); body = la premisa en un párrafo de 200 a 280 caracteres.
+   - highlights: title = titular sobre por qué leerlo (máx. 30, ej. "Te va a robar el sueño"); items = exactamente 3 motivos concretos (máx. 55 caracteres cada uno); fans = "Autor A y Autor B", dos autores con lectores afines (máx. 45), o "" si no estás seguro.
+   - cta: title = llamado corto (máx. 20, ej. "Disponible hoy"); body = una línea sobre disponibilidad (máx. 50, ej. "Stock físico y envíos a todo el país").
+6. palette: colores hex predominantes de la tapa (primary, accent, background).
+7. caption: pie de foto completo para Instagram con emojis y hashtags.
 
 Todo el contenido debe corresponder al libro indicado; nunca uses datos de otro libro.`;
 }
