@@ -27,7 +27,7 @@ module.exports = async function handler(req, res) {
       action = 'upload',
       imageBase64,
       fileName,
-      contentType = 'image/png',
+      contentType = 'image/jpeg',
       r2Config = {}
     } = req.body || {};
 
@@ -89,7 +89,7 @@ module.exports = async function handler(req, res) {
 
     const cleanBase64 = imageBase64.replace(/^data:image\/\w+;base64,/, '');
     const buffer = Buffer.from(cleanBase64, 'base64');
-    const safeKey = fileName || `slides/carousel_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.png`;
+    const safeKey = fileName || `slides/carousel_${Date.now()}_${Math.random().toString(36).substring(2, 7)}.jpg`;
 
     await s3.send(new PutObjectCommand({
       Bucket: bucketName,
