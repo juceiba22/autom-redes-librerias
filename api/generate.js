@@ -5,6 +5,7 @@
  */
 
 const { Anthropic } = require('@anthropic-ai/sdk');
+const { verifySession } = require('../lib/session');
 
 const CLAUDE_MODEL = 'claude-opus-5';
 
@@ -98,8 +99,14 @@ module.exports = async function handler(req, res) {
       reviewText = '',
       quoteText = '',
       bookstore = {},
-      apiKey = ''
+      apiKey = '',
+      authToken
     } = req.body || {};
+
+    // La API Key del servidor solo se usa con una sesión válida
+    if (!apiKey && !verifySession(authToken)) {
+      return res.status(401).json({ error: 'Sesión inválida o expirada. Vuelve a iniciar sesión.' });
+    }
 
     const effectiveApiKey = (apiKey || process.env.ANTHROPIC_API_KEY || process.env.CLAUDE_API_KEY || '').trim();
 

@@ -1,4 +1,5 @@
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+const { verifySession, getR2Config } = require('../lib/session');
 
 module.exports = async function handler(req, res) {
   // CORS
@@ -28,20 +29,18 @@ module.exports = async function handler(req, res) {
       imageBase64,
       fileName,
       contentType = 'image/jpeg',
-      r2Config = {}
+      r2Config = {},
+      authToken
     } = req.body || {};
 
-    // Sanitizar Account ID para evitar duplicación de https:// o .r2.cloudflarestorage.com
-    const rawAccountId = (r2Config.accountId || process.env.R2_ACCOUNT_ID || '').trim();
-    const cleanAccountId = rawAccountId
-      .replace(/^https?:\/\//i, '')
-      .replace(/\.r2\.cloudflarestorage\.com.*$/i, '')
-      .replace(/\/+$/, '');
+    // Las credenciales del servidor solo se usan con una sesión válida
+    const hasOverride = Boolean(r2Config.accountId && r2Config.accessKeyId && r2Config.secretAccessKey);
+    if (!hasOverride && !verifySession(authToken)) {
+      return res.status(401).json({ error: 'Sesión inválida o expirada. Vuelve a iniciar sesión.' });
+    }
 
-    const accessKeyId = (r2Config.accessKeyId || process.env.R2_ACCESS_KEY_ID || '').trim();
-    const secretAccessKey = (r2Config.secretAccessKey || process.env.R2_SECRET_ACCESS_KEY || '').trim();
-    const bucketName = (r2Config.bucketName || process.env.R2_BUCKET_NAME || 'book-carousels').trim();
-    const publicDomain = (r2Config.publicDomain || process.env.R2_PUBLIC_DOMAIN || '').trim().replace(/\/+$/, '');
+    const { accountId: cleanAccountId, accessKeyId, secretAccessKey, bucketName, publicDomain } =
+      getR2Config(hasOverride ? r2Config : {});
 
     if (!cleanAccountId || !accessKeyId || !secretAccessKey) {
       return res.status(400).json({
@@ -74,6 +73,28 @@ module.exports = async function handler(req, res) {
         ? `${publicDomain}/${testKey}`
         : `${endpoint}/${bucketName}/${testKey}`;
 
+      // Verificar que el archivo sea descargable públicamente (Instagram lo necesita)
+      if (!publicDomain) {
+        return res.status(200).json({
+          success: false,
+          error: 'Credenciales OK, pero falta el dominio público del bucket: Instagram no podrá descargar las imágenes.'
+        });
+      }
+      try {
+        const pub = await fetch(testUrl);
+        if (!pub.ok) {
+          return res.status(200).json({
+            success: false,
+            error: `Credenciales OK, pero el dominio público responde ${pub.status} en ${testUrl}. Activa el acceso público del bucket en Cloudflare.`
+          });
+        }
+      } catch (e) {
+        return res.status(200).json({
+          success: false,
+          error: `Credenciales OK, pero no se pudo acceder al dominio público (${e.message}).`
+        });
+      }
+
       return res.status(200).json({
         success: true,
         message: '¡Conexión exitosa con Cloudflare R2!',
@@ -98,9 +119,12 @@ module.exports = async function handler(req, res) {
       ContentType: contentType
     }));
 
-    const finalUrl = publicDomain
-      ? `${publicDomain}/${safeKey}`
-      : `${endpoint}/${bucketName}/${safeKey}`;
+    if (!publicDomain) {
+      return res.status(400).json({
+        error: 'Falta el dominio público del bucket (R2_PUBLIC_DOMAIN). Sin él, Instagram no puede descargar las imágenes.'
+      });
+    }
+    const finalUrl = `${publicDomain}/${safeKey}`;
 
     return res.status(200).json({
       success: true,

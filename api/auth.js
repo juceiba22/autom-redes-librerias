@@ -1,5 +1,6 @@
 const fs = require('fs');
 const path = require('path');
+const { signSession, verifySession, getConnectionStatus } = require('../lib/session');
 
 const DEFAULT_USERS = [
   {
@@ -149,9 +150,19 @@ module.exports = async function handler(req, res) {
           role: foundUser.role || 'client',
           storeName: foundUser.storeName || 'Librería Asociada',
           storeHandle: foundUser.storeHandle || '@libreria',
-          token: 'auth_' + Buffer.from(`${foundUser.username}:${Date.now()}`).toString('base64')
-        }
+          token: signSession(foundUser)
+        },
+        connections: getConnectionStatus(foundUser.username)
       });
+    }
+
+    // ACCIÓN: ESTADO DE CONEXIONES (qué credenciales tiene cargadas el servidor para este usuario)
+    if (action === 'status') {
+      const session = verifySession(req.body.token);
+      if (!session) {
+        return res.status(401).json({ success: false, error: 'Sesión inválida o expirada. Vuelve a iniciar sesión.' });
+      }
+      return res.status(200).json({ success: true, connections: getConnectionStatus(session.username) });
     }
 
     // 2. ACCIÓN: CREAR USUARIO (Para que el admin pueda generar clientes)

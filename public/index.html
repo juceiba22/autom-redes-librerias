@@ -194,7 +194,7 @@
             <span class="w-1.5 h-1.5 rounded-full bg-primary"></span>
             Orquestador Editorial IA • 8 sedes conectadas
           </span>
-          <span class="text-text-muted text-xs hidden sm:inline">Nodo n8n #CORR-04 • Claude • Meta Graph API v20.0</span>
+          <span class="text-text-muted text-xs hidden sm:inline">Nodo n8n #CORR-04 • Claude • Meta Graph API v23.0</span>
         </div>
         <h1 class="font-serif text-3xl sm:text-4xl lg:text-[42px] lg:leading-[48px] font-bold text-text-primary tracking-tight mt-1">
           Transforma cualquier reseña en contenido editorial
@@ -685,6 +685,22 @@
       <!-- Config Form Tabs -->
       <div class="flex flex-col gap-4 text-xs">
         
+        <!-- ESTADO DE CONEXIONES DEL SERVIDOR (variables de entorno de Vercel) -->
+        <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-2">
+          <span class="font-bold text-primary flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-[18px]">verified</span>
+            Conexiones de tu cuenta
+          </span>
+          <div id="serverStatusList" class="flex flex-col gap-1.5 text-[11px]"></div>
+          <p id="serverStatusHint" class="text-[10px] text-text-muted leading-relaxed"></p>
+        </div>
+
+        <details id="cfgManualOverrides" class="group flex flex-col gap-4">
+          <summary class="cursor-pointer text-[11px] font-bold text-text-secondary select-none py-1">
+            Configuración manual (avanzado) — solo si no usas las variables de Vercel
+          </summary>
+          <div class="flex flex-col gap-4 pt-3">
+
         <!-- SECCIÓN 1: CUENTA DE INSTAGRAM DE PRUEBA (META GRAPH API) -->
         <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
           <div class="flex items-center justify-between">
@@ -692,7 +708,7 @@
               <span class="material-symbols-outlined text-[18px]">photo_camera</span>
               Cuenta de Instagram de Prueba (Meta Graph API)
             </span>
-            <span class="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-border-subtle text-text-muted">Graph API v20.0</span>
+            <span class="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-border-subtle text-text-muted">Graph API v23.0</span>
           </div>
 
           <div>
@@ -803,6 +819,9 @@
             <input id="cfgPublishWebhookUrl" type="text" placeholder="https://tu-n8n.up.railway.app/webhook/publish-carousel" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
           </div>
         </div>
+
+          </div>
+        </details>
 
         <!-- SECCIÓN 5: GESTIÓN DE CLIENTES Y USUARIOS (PANEL ADMINISTRADOR) -->
         <div id="cfgAdminUsersSection" class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
@@ -1115,6 +1134,34 @@
     let currentPresetId = 1;
     let uploadedCoverBase64 = null;
     let currentAuthUser = null;
+    // Qué credenciales tiene cargadas el servidor (variables de entorno de Vercel) para este usuario
+    let SERVER_STATUS = { ai: false, storage: false, instagram: false, authSecret: false, envNames: null };
+
+    function getAuthToken() {
+      return (currentAuthUser && currentAuthUser.token) || '';
+    }
+
+    async function refreshServerStatus() {
+      if (!getAuthToken()) return;
+      try {
+        const resp = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'status', token: getAuthToken() })
+        });
+        if (resp.status === 401) {
+          logoutUser();
+          return;
+        }
+        const data = await resp.json();
+        if (data.success && data.connections) {
+          SERVER_STATUS = data.connections;
+          updateUiWithConfig();
+        }
+      } catch (e) {
+        console.warn('No se pudo consultar el estado de conexiones del servidor:', e.message);
+      }
+    }
 
     // =========================================================================
     // SISTEMA DE AUTENTICACION Y CONTROL DE ACCESO
@@ -1186,8 +1233,10 @@
       if (saved) {
         try {
           const user = JSON.parse(saved);
-          if (user && user.username) {
+          // Las sesiones sin token firmado (versión anterior) requieren volver a ingresar
+          if (user && user.username && user.token) {
             setAuthenticatedUser(user);
+            refreshServerStatus();
             return;
           }
         } catch (e) {
@@ -1297,6 +1346,7 @@
           const data = await resp.json();
           if (data && data.success && data.user) {
             authenticatedUser = data.user;
+            if (data.connections) SERVER_STATUS = data.connections;
           }
         }
       } catch (err) {
@@ -1557,13 +1607,37 @@
       updateUiWithConfig();
     }
 
+    function renderServerStatus() {
+      const list = document.getElementById('serverStatusList');
+      const hint = document.getElementById('serverStatusHint');
+      if (!list) return;
+      const row = (ok, label, okText, missingText) => `
+        <div class="flex items-center gap-2">
+          <span class="material-symbols-outlined text-[16px] ${ok ? 'text-status-success' : 'text-status-warning'}">${ok ? 'check_circle' : 'error'}</span>
+          <span class="font-bold text-text-primary">${label}:</span>
+          <span class="text-text-secondary">${ok ? okText : missingText}</span>
+        </div>`;
+      list.innerHTML =
+        row(SERVER_STATUS.ai || Boolean(APP_CONFIG.anthropicApiKey), 'IA (Claude)', 'lista', 'falta ANTHROPIC_API_KEY') +
+        row(SERVER_STATUS.storage, 'Almacenamiento (R2)', 'listo', 'faltan variables R2_*') +
+        row(SERVER_STATUS.instagram, 'Instagram', `conectado (${APP_CONFIG.storeHandle})`, 'faltan META_ACCESS_TOKEN y META_IG_USER_ID');
+      if (hint) {
+        hint.textContent = !SERVER_STATUS.authSecret
+          ? 'Falta la variable AUTH_SECRET en Vercel: sin ella no se pueden validar las sesiones.'
+          : (SERVER_STATUS.ai && SERVER_STATUS.storage && SERVER_STATUS.instagram)
+            ? 'Todo listo: no necesitas completar ningún dato para generar y publicar.'
+            : 'Las credenciales se cargan una sola vez en Vercel → Settings → Environment Variables (y luego Redeploy).';
+      }
+    }
+
     function updateUiWithConfig() {
+      renderServerStatus();
       if (document.getElementById('headerStoreName')) document.getElementById('headerStoreName').textContent = APP_CONFIG.storeName;
       if (document.getElementById('channelIgHandle')) document.getElementById('channelIgHandle').textContent = APP_CONFIG.storeHandle + ' • Feed & Historias';
       if (document.getElementById('publishTargetHandle')) document.getElementById('publishTargetHandle').textContent = APP_CONFIG.storeHandle;
       
       const hasN8n = Boolean(APP_CONFIG.webhookGenerate);
-      const hasClaude = Boolean(APP_CONFIG.anthropicApiKey);
+      const hasClaude = Boolean(APP_CONFIG.anthropicApiKey) || SERVER_STATUS.ai;
       const dot = document.getElementById('headerStatusDot');
       const txt = document.getElementById('headerStatusText');
       if (dot && txt) {
@@ -1856,6 +1930,7 @@
         quoteText: document.getElementById('inputBookQuote').value.trim(),
         coverImageUrl: uploadedCoverBase64 || (BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl),
         apiKey: APP_CONFIG.anthropicApiKey,
+        authToken: getAuthToken(),
         bookstore: {
           name: APP_CONFIG.storeName,
           instagramHandle: APP_CONFIG.storeHandle
@@ -2323,7 +2398,42 @@
       document.getElementById('publishModal').classList.add('hidden');
     }
 
-    // CONVERTIR STRING SVG A DATA URL PNG USANDO CANVAS
+    // CONVERTIR STRING SVG A DATA URL JPEG (Requisito estricto de Meta para Carruseles de Instagram)
+    async function svgToJpegDataUrl(svgString, width = 1080, height = 1350) {
+      return new Promise((resolve, reject) => {
+        try {
+          const blob = new Blob([svgString], { type: 'image/svg+xml;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const img = new Image();
+          img.crossOrigin = 'anonymous';
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              canvas.width = width;
+              canvas.height = height;
+              const ctx = canvas.getContext('2d');
+              ctx.fillStyle = '#FAF7F2';
+              ctx.fillRect(0, 0, width, height);
+              ctx.drawImage(img, 0, 0, width, height);
+              URL.revokeObjectURL(url);
+              resolve(canvas.toDataURL('image/jpeg', 0.95));
+            } catch (canvasErr) {
+              URL.revokeObjectURL(url);
+              reject(canvasErr);
+            }
+          };
+          img.onerror = (e) => {
+            URL.revokeObjectURL(url);
+            reject(new Error('Fallo al cargar SVG para rasterización'));
+          };
+          img.src = url;
+        } catch (e) {
+          reject(e);
+        }
+      });
+    }
+
+    // CONVERTIR STRING SVG A DATA URL PNG USANDO CANVAS (Para descargas locales)
     async function svgToPngDataUrl(svgString, width = 1080, height = 1350) {
       return new Promise((resolve, reject) => {
         try {
@@ -2373,17 +2483,34 @@
       feedback.className = "text-[11px] text-primary font-medium animate-pulse";
 
       try {
-        const res = await fetch(`https://graph.facebook.com/v20.0/me/accounts?fields=id,name,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(token)}`);
-        const data = await res.json();
+        // 1. Consultar primero /me: si el token es un Page Access Token, /me es la Página directamente
+        const resMe = await fetch(`https://graph.facebook.com/v23.0/me?fields=id,name,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(token)}`);
+        const meData = await resMe.json();
 
-        if (data.error) {
-          feedback.textContent = "✕ Error Meta: " + data.error.message;
+        if (meData.error && meData.error.code !== 100) {
+          feedback.textContent = "✕ Error Meta: " + meData.error.message;
           feedback.className = "text-[11px] text-status-danger font-semibold";
           return;
         }
 
-        if (data.data && data.data.length > 0) {
-          const pageWithIg = data.data.find(p => p.instagram_business_account && p.instagram_business_account.id);
+        // Si es un Page Token con Instagram vinculado
+        if (meData.instagram_business_account && meData.instagram_business_account.id) {
+          const igAcc = meData.instagram_business_account;
+          document.getElementById('cfgIgUserId').value = igAcc.id;
+          if (igAcc.username) {
+            document.getElementById('cfgStoreHandle').value = '@' + igAcc.username;
+          }
+          feedback.textContent = `✓ Detectada: @${igAcc.username || 'cuenta'} (ID: ${igAcc.id})`;
+          feedback.className = "text-[11px] text-status-success font-bold";
+          return;
+        }
+
+        // 2. Si no vino en /me, podría ser un User Token. Consultamos /me/accounts
+        const resAcc = await fetch(`https://graph.facebook.com/v23.0/me/accounts?fields=id,name,instagram_business_account{id,username,name}&access_token=${encodeURIComponent(token)}`);
+        const accData = await resAcc.json();
+
+        if (accData.data && accData.data.length > 0) {
+          const pageWithIg = accData.data.find(p => p.instagram_business_account && p.instagram_business_account.id);
           if (pageWithIg) {
             const igAcc = pageWithIg.instagram_business_account;
             document.getElementById('cfgIgUserId').value = igAcc.id;
@@ -2394,16 +2521,17 @@
             feedback.className = "text-[11px] text-status-success font-bold";
             return;
           } else {
-            feedback.textContent = `⚠️ Fan Page "${data.data[0].name}" detectada pero falta vincular con Instagram.`;
+            feedback.textContent = `⚠️ Fan Page "${accData.data[0].name}" detectada pero falta vincularla a Instagram en Meta Business Suite.`;
             feedback.className = "text-[11px] text-status-warning font-semibold";
             return;
           }
         }
 
-        // Consultar /me para confirmar el ID personal
-        const resMe = await fetch(`https://graph.facebook.com/v20.0/me?fields=id,name&access_token=${encodeURIComponent(token)}`);
-        const meData = await resMe.json();
-        feedback.textContent = `⚠️ ID ${meData.id || ''} es tu Facebook personal. Vincula tu Instagram a una Fan Page.`;
+        if (meData.name) {
+          feedback.textContent = `⚠️ Conectado a "${meData.name}", pero no tiene una cuenta de Instagram Profesional vinculada.`;
+        } else {
+          feedback.textContent = "✕ No se encontró una cuenta de Instagram vinculada a este token.";
+        }
         feedback.className = "text-[11px] text-status-warning font-semibold";
 
       } catch (err) {
@@ -2433,17 +2561,14 @@
         publicDomain: document.getElementById('cfgR2PublicDomain').value.trim()
       };
 
-      if (!r2Config.accountId || !r2Config.accessKeyId || !r2Config.secretAccessKey) {
-        feedback.textContent = "⚠️ Completa Account ID, Access Key y Secret Key";
-        feedback.className = "text-[11px] text-status-warning font-semibold";
-        return;
-      }
+      // Sin campos completos se prueba la configuración del servidor (variables R2_* de Vercel)
+      const useServerConfig = !r2Config.accountId || !r2Config.accessKeyId || !r2Config.secretAccessKey;
 
       try {
         const res = await fetch('/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ action: 'test', r2Config })
+          body: JSON.stringify({ action: 'test', r2Config: useServerConfig ? {} : r2Config, authToken: getAuthToken() })
         });
         const data = await res.json();
         if (data.success) {
@@ -2480,137 +2605,88 @@
 
       const caption = document.getElementById('publishCaptionInput').value;
 
-      // MODO 1: PUBLICACIÓN DIRECTA CON META GRAPH API (Si se ingresó Token y IG_USER_ID)
-      if (APP_CONFIG.igUserId && APP_CONFIG.accessToken) {
+      // MODO 1: PUBLICACIÓN DIRECTA VÍA SERVIDOR (/api/publish con las credenciales del cliente en Vercel)
+      const isAdmin = currentAuthUser && currentAuthUser.role === 'admin';
+      const hasLocalMetaOverride = isAdmin && APP_CONFIG.igUserId && APP_CONFIG.accessToken;
+      if (SERVER_STATUS.instagram || hasLocalMetaOverride) {
         try {
-          progressText.textContent = "1/4 Preparando diapositivas del carrusel...";
-          
-          let slideUrls = [];
+          if (!getAuthToken()) {
+            throw new Error('Tu sesión no es válida. Cierra sesión y vuelve a ingresar.');
+          }
 
-          // Si Cloudflare R2 está configurado, renderizar y subir los slides reales
-          if (APP_CONFIG.r2AccountId && APP_CONFIG.r2AccessKeyId && APP_CONFIG.r2SecretAccessKey) {
-            progressText.textContent = "1/4 Subiendo diapositivas a Cloudflare R2...";
+          // Override manual de R2 (solo si se completó en Ajustes); si no, el servidor usa sus variables
+          const hasLocalR2 = APP_CONFIG.r2AccountId && APP_CONFIG.r2AccessKeyId && APP_CONFIG.r2SecretAccessKey;
+          const r2Override = hasLocalR2 ? {
+            accountId: APP_CONFIG.r2AccountId,
+            accessKeyId: APP_CONFIG.r2AccessKeyId,
+            secretAccessKey: APP_CONFIG.r2SecretAccessKey,
+            bucketName: APP_CONFIG.r2BucketName,
+            publicDomain: APP_CONFIG.r2PublicDomain
+          } : {};
+
+          // 1. Rasterizar y subir cada slide a R2
+          const slideUrls = [];
+          const carouselTimestamp = Date.now();
+          for (let i = 0; i < carouselData.slides.length; i++) {
+            progressText.textContent = `1/3 Subiendo slide ${i + 1}/${carouselData.slides.length} a Cloudflare R2...`;
+            let jpegDataUrl;
             try {
-              const carouselTimestamp = Date.now();
-              for (let i = 0; i < carouselData.slides.length; i++) {
-                progressText.textContent = `1/4 Subiendo slide ${i + 1}/${carouselData.slides.length} a Cloudflare R2...`;
-                const svgString = getSlideSvgString(i);
-                let pngDataUrl = null;
-                try {
-                  pngDataUrl = await svgToPngDataUrl(svgString);
-                } catch (e) {
-                  console.warn("No se pudo rasterizar slide en canvas local:", e);
-                }
-
-                if (pngDataUrl) {
-                  const upRes = await fetch('/api/upload', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      action: 'upload',
-                      imageBase64: pngDataUrl,
-                      fileName: `slides/${carouselTimestamp}/slide_${i + 1}.png`,
-                      r2Config: {
-                        accountId: APP_CONFIG.r2AccountId,
-                        accessKeyId: APP_CONFIG.r2AccessKeyId,
-                        secretAccessKey: APP_CONFIG.r2SecretAccessKey,
-                        bucketName: APP_CONFIG.r2BucketName,
-                        publicDomain: APP_CONFIG.r2PublicDomain
-                      }
-                    })
-                  });
-                  const upData = await upRes.json();
-                  if (upData.success && upData.url) {
-                    slideUrls.push(upData.url);
-                  }
-                }
-              }
-            } catch (r2Err) {
-              console.warn("Fallo subida a R2, se usará fallback:", r2Err);
+              jpegDataUrl = await svgToJpegDataUrl(getSlideSvgString(i));
+            } catch (e) {
+              throw new Error(`No se pudo convertir el slide ${i + 1} a imagen: ${e.message}`);
             }
-          }
 
-          // Fallback seguro si no hay R2 o si la subida local falló
-          if (slideUrls.length < 2) {
-            slideUrls = [
-              carouselData.book.coverUrl || "https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=1080",
-              "https://images.unsplash.com/photo-1512820790803-83ca734da794?auto=format&fit=crop&q=80&w=1080"
-            ];
-          }
-
-          progressText.textContent = `2/4 Creando ${slideUrls.length} contenedores de slides en Instagram...`;
-          const containerIds = [];
-          for (let i = 0; i < slideUrls.length; i++) {
-            progressText.textContent = `2/4 Creando slide ${i + 1}/${slideUrls.length} en Instagram...`;
-            const itemUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?image_url=${encodeURIComponent(slideUrls[i])}&is_carousel_item=true&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
-            const resItem = await fetch(itemUrl, { method: 'POST' });
-            const dataItem = await resItem.json();
-            if (dataItem.error) {
-              throw new Error(dataItem.error.message || 'Error al crear item container');
+            const upRes = await fetch('/api/upload', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                action: 'upload',
+                imageBase64: jpegDataUrl,
+                fileName: `slides/${carouselTimestamp}/slide_${i + 1}.jpg`,
+                contentType: 'image/jpeg',
+                authToken: getAuthToken(),
+                r2Config: r2Override
+              })
+            });
+            const upData = await upRes.json().catch(() => ({}));
+            if (!upRes.ok || !upData.success || !upData.url) {
+              throw new Error(`Falló la subida del slide ${i + 1} a R2: ${upData.error || 'HTTP ' + upRes.status}`);
             }
-            containerIds.push(dataItem.id);
-            // Breve intervalo para evitar saturación de peticiones a la API
-            await new Promise(r => setTimeout(r, 600));
+            slideUrls.push(upData.url);
           }
 
-          progressText.textContent = "3/4 Creando contenedor de carrusel en Meta...";
-          const carouselUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media?media_type=CAROUSEL&children=${containerIds.join(',')}&caption=${encodeURIComponent(caption)}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
-          const resCar = await fetch(carouselUrl, { method: 'POST' });
-          const dataCar = await resCar.json();
-          if (dataCar.error) {
-            throw new Error(dataCar.error.message || 'Error al crear carrusel');
-          }
-
-          // PASO CRÍTICO: Esperar a que Instagram procese todas las imágenes (status_code === 'FINISHED')
-          progressText.textContent = "3/4 Esperando que Instagram procese y valide las imágenes...";
-          let isReady = false;
-          let attempts = 0;
-          const maxAttempts = 15; // Hasta 30 segundos de espera activa
-
-          while (!isReady && attempts < maxAttempts) {
-            attempts++;
-            await new Promise(r => setTimeout(r, 2000));
-
-            const statusUrl = `https://graph.facebook.com/v20.0/${dataCar.id}?fields=status_code,status&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
-            const resStatus = await fetch(statusUrl);
-            const dataStatus = await resStatus.json();
-
-            if (dataStatus.status_code === 'FINISHED') {
-              isReady = true;
-            } else if (dataStatus.status_code === 'ERROR') {
-              throw new Error('Instagram no pudo procesar las imágenes del carrusel. Verifica que sean imágenes JPG/PNG accesibles.');
-            } else if (dataStatus.status_code === 'EXPIRED') {
-              throw new Error('El contenedor del carrusel expiró en los servidores de Instagram.');
-            } else {
-              progressText.textContent = `3/4 Instagram procesando imágenes (validación ${attempts}/${maxAttempts})...`;
-            }
-          }
-
-          if (!isReady) {
-            // Margen final de seguridad si status_code no estuviera disponible
-            await new Promise(r => setTimeout(r, 2500));
-          }
-
-          progressText.textContent = "4/4 Publicando carrusel en tu feed de Instagram...";
-          const publishUrl = `https://graph.facebook.com/v20.0/${APP_CONFIG.igUserId}/media_publish?creation_id=${dataCar.id}&access_token=${encodeURIComponent(APP_CONFIG.accessToken)}`;
-          const resPub = await fetch(publishUrl, { method: 'POST' });
-          const dataPub = await resPub.json();
-          if (dataPub.error) {
-            throw new Error(dataPub.error.message || 'Error al publicar carrusel');
+          // 2. El servidor verifica las imágenes y publica en Instagram
+          progressText.textContent = "2/3 Verificando imágenes y creando el carrusel en Instagram...";
+          const pubRes = await fetch('/api/publish', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              authToken: getAuthToken(),
+              imageUrls: slideUrls,
+              caption,
+              ...(hasLocalMetaOverride && !SERVER_STATUS.instagram
+                ? { accessToken: APP_CONFIG.accessToken, igUserId: APP_CONFIG.igUserId }
+                : {})
+            })
+          });
+          const pubData = await pubRes.json().catch(() => ({}));
+          if (!pubRes.ok || !pubData.success) {
+            const code = pubData.details && pubData.details.code ? `\n\n(Código Meta: ${pubData.details.code}${pubData.details.subcode ? '/' + pubData.details.subcode : ''})` : '';
+            throw new Error((pubData.error || `El servidor respondió ${pubRes.status}`) + code);
           }
 
           // Registrar timestamp para el control anti-spam
           localStorage.setItem('lastPublishTimestamp', Date.now().toString());
 
-          progressText.textContent = "✓ ¡Publicación exitosa en Instagram!";
+          progressText.textContent = "3/3 ✓ ¡Publicación exitosa en Instagram!";
           setTimeout(() => {
-            alert(`🎉 ¡ÉXITO TOTAL!\n\nEl carrusel se ha publicado en tu cuenta de Instagram (${APP_CONFIG.storeHandle}).\n\nPost ID: ${dataPub.id}\n\n¡Abre Instagram en tu celular para ver tu publicación en vivo!`);
+            alert(`🎉 ¡Carrusel publicado en Instagram (${APP_CONFIG.storeHandle})!\n\nPost ID: ${pubData.id}${pubData.permalink ? '\n' + pubData.permalink : ''}`);
             closePublishModal();
           }, 800);
           return;
-        } catch (metaErr) {
-          console.error("Meta Graph API error:", metaErr);
-          alert(`⚠️ Respuesta de Meta API:\n${metaErr.message}\n\nVerifica que tu token tenga el permiso 'instagram_content_publish' y que el ID de Instagram pertenezca a una cuenta Profesional.`);
+        } catch (pubErr) {
+          console.error("Error al publicar:", pubErr);
+          alert(`⚠️ No se pudo publicar el carrusel:\n\n${pubErr.message}`);
           progressBox.classList.add('hidden');
           confirmBtn.disabled = false;
           return;
@@ -2650,7 +2726,9 @@
       setTimeout(() => {
         progressText.textContent = "3/3 Conexión lista";
         setTimeout(() => {
-          alert(`📌 Para publicar en tu cuenta real:\n\n1. Haz clic en el engranaje ⚙️ (Ajustes) arriba a la derecha.\n2. Pega tu Instagram Business ID (IG_USER_ID) y tu Meta Access Token.\n3. Haz clic en "Guardar Conexiones".\n\n¡Y podrás publicar con 1 solo clic!`);
+          alert(`📌 Esta cuenta todavía no tiene Instagram conectado.\n\nEl administrador debe cargar en Vercel (Settings → Environment Variables) las variables:\n• META_ACCESS_TOKEN\n• META_IG_USER_ID\n\ny volver a desplegar el proyecto.`);
+          confirmBtn.disabled = false;
+          progressBox.classList.add('hidden');
           closePublishModal();
         }, 800);
       }, 800);
