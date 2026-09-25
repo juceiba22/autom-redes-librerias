@@ -153,7 +153,7 @@
       </nav>
 
       <!-- SUITE CONTROLS & AVATAR -->
-      <div class="flex items-center gap-3">
+      <div class="flex items-center gap-2 sm:gap-3">
         <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 bg-surface-container-low rounded-lg border border-border-subtle text-xs text-text-secondary">
           <span class="material-symbols-outlined text-[16px] text-primary">store</span>
           <span id="headerStoreName" class="font-medium text-text-primary">Casa Central - Corrientes</span>
@@ -163,8 +163,18 @@
           <span class="material-symbols-outlined text-[18px]">tune</span>
         </button>
 
-        <div class="w-8 h-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-sm">
-          LB
+        <!-- Bloque de Usuario Activo y Logout -->
+        <div id="navbarUserBlock" class="flex items-center gap-2 pl-2 border-l border-border-subtle">
+          <div id="userAvatarBadge" class="w-8 h-8 rounded-full bg-primary text-white font-bold text-xs flex items-center justify-center shadow-sm select-none" title="Usuario activo">
+            LB
+          </div>
+          <div class="hidden md:flex flex-col text-left">
+            <span id="navUserName" class="text-xs font-bold text-text-primary leading-tight truncate max-w-[130px]">Invitado</span>
+            <span id="navUserRole" class="text-[10px] text-text-muted leading-tight uppercase font-semibold">Cliente</span>
+          </div>
+          <button type="button" onclick="logoutUser()" class="p-1.5 rounded-lg text-text-muted hover:text-red-700 hover:bg-red-50 transition cursor-pointer" title="Cerrar sesión">
+            <span class="material-symbols-outlined text-[18px]">logout</span>
+          </button>
         </div>
       </div>
 
@@ -794,6 +804,63 @@
           </div>
         </div>
 
+        <!-- SECCIÓN 5: GESTIÓN DE CLIENTES Y USUARIOS (PANEL ADMINISTRADOR) -->
+        <div id="cfgAdminUsersSection" class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-primary flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[18px]">group</span>
+              Gestión de Usuarios Clientes
+            </span>
+            <span class="text-[10px] font-mono bg-white px-2 py-0.5 rounded border border-border-subtle text-primary font-bold">Panel Admin</span>
+          </div>
+
+          <p class="text-[11px] text-text-secondary leading-relaxed">
+            Crea usuarios manualmente para que tus clientes prueben el producto con su marca y sus redes.
+          </p>
+
+          <!-- Lista de Usuarios Existentes -->
+          <div class="bg-white p-3 rounded-xl border border-border-subtle flex flex-col gap-2">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-text-muted">Usuarios Registrados</span>
+            <div id="adminUsersList" class="flex flex-col gap-1.5 max-h-44 overflow-y-auto custom-scrollbar">
+              <!-- Renderizado dinámicamente con JavaScript -->
+            </div>
+          </div>
+
+          <!-- Formulario para Crear Usuario -->
+          <div class="bg-white p-3.5 rounded-xl border border-border-subtle flex flex-col gap-2.5">
+            <span class="text-[10px] font-bold uppercase tracking-wider text-primary">Crear Nuevo Usuario de Cliente</span>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-text-secondary mb-0.5">Usuario (Login)</label>
+                <input id="newClientUsername" type="text" placeholder="ej: rayuela" class="w-full bg-surface-container-low border border-border-subtle rounded-lg p-2 text-xs text-text-primary">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-secondary mb-0.5">Contraseña</label>
+                <input id="newClientPassword" type="text" placeholder="ej: rayuela2025" class="w-full bg-surface-container-low border border-border-subtle rounded-lg p-2 text-xs font-mono text-text-primary">
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[10px] font-bold text-text-secondary mb-0.5">Nombre de la Librería</label>
+                <input id="newClientStoreName" type="text" placeholder="ej: Librería Rayuela" class="w-full bg-surface-container-low border border-border-subtle rounded-lg p-2 text-xs text-text-primary">
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-text-secondary mb-0.5">Instagram (@)</label>
+                <input id="newClientHandle" type="text" placeholder="ej: @libreriarayuela" class="w-full bg-surface-container-low border border-border-subtle rounded-lg p-2 text-xs text-text-primary">
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2 pt-1">
+              <button type="button" onclick="handleCreateClientUser()" class="flex-1 btn-stitch-primary py-2 rounded-lg text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer">
+                <span class="material-symbols-outlined text-[16px]">person_add</span>
+                <span>Guardar Nuevo Usuario</span>
+              </button>
+            </div>
+          </div>
+        </div>
+
       </div>
 
       <!-- Action Buttons -->
@@ -871,6 +938,132 @@
   </div>
 
   <!-- ========================================================================= -->
+  <!-- MODAL / OVERLAY: LOGIN SIMPLE PARA CLIENTES & DEMOSTRACIONES              -->
+  <!-- ========================================================================= -->
+  <div id="loginOverlay" class="fixed inset-0 z-[100] bg-[#FAF7F2] sm:bg-[#1B1C15]/75 sm:backdrop-blur-md flex items-center justify-center p-4 overflow-y-auto">
+    <div class="bg-white rounded-3xl max-w-md w-full p-6 sm:p-8 border border-border-subtle shadow-2xl flex flex-col gap-6 relative my-auto">
+      
+      <!-- Top Decorative Bar & Brand -->
+      <div class="flex flex-col items-center text-center gap-2">
+        <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full badge-wine text-[11px] font-extrabold uppercase tracking-wider">
+          <span class="w-1.5 h-1.5 rounded-full bg-primary animate-pulse"></span>
+          Leonardo Enterprise
+        </div>
+        <h2 class="font-serif text-2xl sm:text-3xl font-bold text-text-primary tracking-tight mt-1">
+          Acceso a Clientes & Demo
+        </h2>
+        <p class="text-xs text-text-secondary leading-relaxed max-w-xs">
+          Ingresa con tu usuario y contraseña asignados para explorar el orquestador editorial y generar carruseles.
+        </p>
+      </div>
+
+      <!-- Error Alert (Oculto por defecto) -->
+      <div id="loginErrorAlert" class="hidden p-3 rounded-xl bg-red-50 border border-red-200 text-red-800 text-xs flex items-center gap-2">
+        <span class="material-symbols-outlined text-[18px] text-red-600 shrink-0">error</span>
+        <span id="loginErrorMessage" class="font-medium">Usuario o contraseña incorrectos.</span>
+      </div>
+
+      <!-- Formulario de Login -->
+      <form id="loginForm" onsubmit="handleLoginSubmit(event)" class="flex flex-col gap-4 text-xs">
+        <div>
+          <label for="loginUsernameInput" class="block font-bold text-text-secondary mb-1.5">
+            Usuario o Correo
+          </label>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-muted">person</span>
+            <input 
+              id="loginUsernameInput" 
+              type="text" 
+              required 
+              autocomplete="username"
+              placeholder="Ej: ateneo, demo o admin" 
+              class="w-full bg-surface-container-low focus:bg-white border border-border-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-3 py-2.5 text-xs text-text-primary transition outline-none"
+            >
+          </div>
+        </div>
+
+        <div>
+          <div class="flex items-center justify-between mb-1.5">
+            <label for="loginPasswordInput" class="block font-bold text-text-secondary">
+              Contraseña
+            </label>
+          </div>
+          <div class="relative">
+            <span class="material-symbols-outlined absolute left-3 top-2.5 text-[18px] text-text-muted">lock</span>
+            <input 
+              id="loginPasswordInput" 
+              type="password" 
+              required 
+              autocomplete="current-password"
+              placeholder="••••••••" 
+              class="w-full bg-surface-container-low focus:bg-white border border-border-subtle focus:border-primary focus:ring-1 focus:ring-primary rounded-xl pl-10 pr-10 py-2.5 text-xs text-text-primary transition outline-none"
+            >
+            <button 
+              type="button" 
+              onclick="toggleLoginPasswordVisibility()" 
+              class="absolute right-2.5 top-2 text-text-muted hover:text-text-primary p-1 transition cursor-pointer"
+              title="Mostrar / ocultar contraseña"
+            >
+              <span id="loginPasswordToggleIcon" class="material-symbols-outlined text-[18px]">visibility</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between text-xs">
+          <label class="flex items-center gap-2 cursor-pointer select-none text-text-secondary">
+            <input id="loginRememberCheck" type="checkbox" checked class="rounded border-border-subtle text-primary focus:ring-primary w-4 h-4">
+            <span class="text-[11px]">Recordar sesión en este equipo</span>
+          </label>
+        </div>
+
+        <button 
+          id="btnLoginSubmit" 
+          type="submit" 
+          class="w-full btn-stitch-primary py-3 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer shadow-md mt-1"
+        >
+          <span class="material-symbols-outlined text-[18px]">login</span>
+          <span id="btnLoginText">Ingresar al Sistema</span>
+        </button>
+      </form>
+
+      <!-- Demo Accounts Accordion (Para pruebas y clientes) -->
+      <div class="border-t border-border-subtle pt-3">
+        <details class="group text-xs text-text-secondary">
+          <summary class="cursor-pointer list-none flex items-center justify-between font-semibold text-text-muted hover:text-primary transition">
+            <span class="flex items-center gap-1.5 text-[11px]">
+              <span class="material-symbols-outlined text-[15px]">badge</span>
+              Cuentas de demostración disponibles
+            </span>
+            <span class="material-symbols-outlined text-[16px] group-open:rotate-180 transition">expand_more</span>
+          </summary>
+          <div class="mt-2.5 p-2.5 bg-surface-container-low rounded-xl border border-border-subtle flex flex-col gap-2">
+            <p class="text-[10px] text-text-muted">Haz clic en una cuenta para autocompletar:</p>
+            <div class="grid grid-cols-2 gap-1.5">
+              <button type="button" onclick="quickFillLogin('demo', 'demo2025')" class="p-2 text-left bg-white hover:bg-surface-container rounded-lg border border-border-subtle transition cursor-pointer">
+                <span class="block font-bold text-text-primary text-[11px]">👤 Demo General</span>
+                <span class="block text-[10px] text-text-muted font-mono">demo / demo2025</span>
+              </button>
+              <button type="button" onclick="quickFillLogin('ateneo', 'ateneo2025')" class="p-2 text-left bg-white hover:bg-surface-container rounded-lg border border-border-subtle transition cursor-pointer">
+                <span class="block font-bold text-primary text-[11px]">🏛️ El Ateneo</span>
+                <span class="block text-[10px] text-text-muted font-mono">ateneo / ateneo2025</span>
+              </button>
+              <button type="button" onclick="quickFillLogin('cuspide', 'cuspide2025')" class="p-2 text-left bg-white hover:bg-surface-container rounded-lg border border-border-subtle transition cursor-pointer">
+                <span class="block font-bold text-accent-gold text-[11px]">📚 Cúspide</span>
+                <span class="block text-[10px] text-text-muted font-mono">cuspide / cuspide2025</span>
+              </button>
+              <button type="button" onclick="quickFillLogin('admin', 'leonardo2025')" class="p-2 text-left bg-white hover:bg-surface-container rounded-lg border border-border-subtle transition cursor-pointer">
+                <span class="block font-bold text-primary text-[11px]">👑 Administrador</span>
+                <span class="block text-[10px] text-text-muted font-mono">admin / leonardo2025</span>
+              </button>
+            </div>
+          </div>
+        </details>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ========================================================================= -->
   <!-- FOOTER DESKTOP                                                            -->
   <!-- ========================================================================= -->
   <footer class="w-full bg-surface-container-low py-6 border-t border-border-subtle mt-auto">
@@ -921,6 +1114,374 @@
     let activeMobileTab = 'estudio';
     let currentPresetId = 1;
     let uploadedCoverBase64 = null;
+    let currentAuthUser = null;
+
+    // =========================================================================
+    // SISTEMA DE AUTENTICACION Y CONTROL DE ACCESO
+    // =========================================================================
+    // Catálogo de usuarios por defecto (permite login online vía API y offline/estático)
+    const DEFAULT_AUTH_USERS = [
+      {
+        username: "admin",
+        password: "leonardo2025",
+        name: "Administrador Leonardo",
+        role: "admin",
+        storeName: "Casa Central - Av. Corrientes",
+        storeHandle: "@librerias_central"
+      },
+      {
+        username: "demo",
+        password: "demo2025",
+        name: "Cliente Demo",
+        role: "client",
+        storeName: "Librería Palermo Soho",
+        storeHandle: "@libreria_demo"
+      },
+      {
+        username: "ateneo",
+        password: "ateneo2025",
+        name: "Librería El Ateneo",
+        role: "client",
+        storeName: "El Ateneo Grand Splendid",
+        storeHandle: "@elateneoliterario"
+      },
+      {
+        username: "cuspide",
+        password: "cuspide2025",
+        name: "Librería Cúspide",
+        role: "client",
+        storeName: "Cúspide Libros",
+        storeHandle: "@cuspidelibros"
+      },
+      {
+        username: "hernandez",
+        password: "hernandez2025",
+        name: "Librería Hernández",
+        role: "client",
+        storeName: "Librería Hernández",
+        storeHandle: "@libreriahernandez"
+      }
+    ];
+
+    function getAllAuthUsers() {
+      try {
+        const stored = localStorage.getItem('leonardo_custom_users');
+        if (stored) {
+          const custom = JSON.parse(stored);
+          if (Array.isArray(custom)) {
+            const map = new Map();
+            DEFAULT_AUTH_USERS.forEach(u => map.set((u.username || '').toLowerCase(), u));
+            custom.forEach(u => map.set((u.username || '').toLowerCase(), u));
+            return Array.from(map.values());
+          }
+        }
+      } catch (e) {
+        console.warn('Error leyendo custom users:', e);
+      }
+      return [...DEFAULT_AUTH_USERS];
+    }
+
+    function initAuth() {
+      const saved = localStorage.getItem('leonardo_auth_user') || sessionStorage.getItem('leonardo_auth_user');
+      if (saved) {
+        try {
+          const user = JSON.parse(saved);
+          if (user && user.username) {
+            setAuthenticatedUser(user);
+            return;
+          }
+        } catch (e) {
+          console.warn('Sesión previa inválida:', e);
+        }
+      }
+      showLoginModal(true);
+    }
+
+    function setAuthenticatedUser(user) {
+      currentAuthUser = user;
+      showLoginModal(false);
+
+      // Actualizar información en el Navbar
+      const avatarBadge = document.getElementById('userAvatarBadge');
+      const navName = document.getElementById('navUserName');
+      const navRole = document.getElementById('navUserRole');
+
+      if (avatarBadge) {
+        const displayName = user.name || user.username || 'LB';
+        const initials = displayName
+          .split(' ')
+          .filter(Boolean)
+          .map(w => w[0])
+          .slice(0, 2)
+          .join('')
+          .toUpperCase();
+        avatarBadge.textContent = initials || 'LB';
+        avatarBadge.title = `Conectado como ${user.name || user.username} (${user.username})`;
+      }
+
+      if (navName) navName.textContent = user.name || user.username;
+      if (navRole) navRole.textContent = user.role === 'admin' ? 'Administrador' : 'Cliente';
+
+      // Configurar librería y handle automáticamente si el usuario tiene datos asociados
+      if (user.storeName && !localStorage.getItem('cfgStoreName_customized')) {
+        APP_CONFIG.storeName = user.storeName;
+        if (document.getElementById('cfgStoreName')) document.getElementById('cfgStoreName').value = user.storeName;
+      }
+      if (user.storeHandle && !localStorage.getItem('cfgStoreHandle_customized')) {
+        APP_CONFIG.storeHandle = user.storeHandle;
+        if (document.getElementById('cfgStoreHandle')) document.getElementById('cfgStoreHandle').value = user.storeHandle;
+      }
+      updateUiWithConfig();
+
+      // Sección de administración de usuarios en el modal de Ajustes
+      const adminSection = document.getElementById('cfgAdminUsersSection');
+      if (adminSection) {
+        if (user.role === 'admin') {
+          adminSection.style.display = 'flex';
+          renderAdminUsersList();
+        } else {
+          adminSection.style.display = 'none';
+        }
+      }
+    }
+
+    function showLoginModal(show) {
+      const overlay = document.getElementById('loginOverlay');
+      if (!overlay) return;
+      if (show) {
+        overlay.classList.remove('hidden');
+        document.body.classList.add('overflow-hidden');
+        const usernameInput = document.getElementById('loginUsernameInput');
+        if (usernameInput) setTimeout(() => usernameInput.focus(), 150);
+      } else {
+        overlay.classList.add('hidden');
+        document.body.classList.remove('overflow-hidden');
+      }
+    }
+
+    async function handleLoginSubmit(event) {
+      if (event) event.preventDefault();
+      const usernameInput = document.getElementById('loginUsernameInput');
+      const passwordInput = document.getElementById('loginPasswordInput');
+      const rememberCheck = document.getElementById('loginRememberCheck');
+      const errorAlert = document.getElementById('loginErrorAlert');
+      const errorMessage = document.getElementById('loginErrorMessage');
+      const submitBtn = document.getElementById('btnLoginSubmit');
+      const btnText = document.getElementById('btnLoginText');
+
+      const username = (usernameInput ? usernameInput.value : '').trim();
+      const password = (passwordInput ? passwordInput.value : '').trim();
+
+      if (!username || !password) {
+        if (errorAlert && errorMessage) {
+          errorMessage.textContent = 'Por favor completa usuario y contraseña.';
+          errorAlert.classList.remove('hidden');
+        }
+        return;
+      }
+
+      if (submitBtn) submitBtn.disabled = true;
+      if (btnText) btnText.textContent = 'Verificando...';
+      if (errorAlert) errorAlert.classList.add('hidden');
+
+      let authenticatedUser = null;
+
+      // 1. Intentar validar vía API /api/auth
+      try {
+        const resp = await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'login', username, password })
+        });
+        if (resp.ok) {
+          const data = await resp.json();
+          if (data && data.success && data.user) {
+            authenticatedUser = data.user;
+          }
+        }
+      } catch (err) {
+        console.warn('API /api/auth no disponible o servidor estático, usando catálogo:', err.message);
+      }
+
+      // 2. Si la API no respondió o estamos en entorno estático, validar contra el catálogo local
+      if (!authenticatedUser) {
+        const users = getAllAuthUsers();
+        const matched = users.find(u => 
+          (u.username || '').toLowerCase() === username.toLowerCase() && 
+          String(u.password) === password
+        );
+        if (matched) {
+          authenticatedUser = {
+            username: matched.username,
+            name: matched.name,
+            role: matched.role || 'client',
+            storeName: matched.storeName || 'Librería Asociada',
+            storeHandle: matched.storeHandle || `@${matched.username}`
+          };
+        }
+      }
+
+      if (submitBtn) submitBtn.disabled = false;
+      if (btnText) btnText.textContent = 'Ingresar al Sistema';
+
+      if (authenticatedUser) {
+        const remember = rememberCheck ? rememberCheck.checked : true;
+        const serialized = JSON.stringify(authenticatedUser);
+        if (remember) {
+          localStorage.setItem('leonardo_auth_user', serialized);
+        } else {
+          sessionStorage.setItem('leonardo_auth_user', serialized);
+        }
+
+        if (passwordInput) passwordInput.value = '';
+        if (errorAlert) errorAlert.classList.add('hidden');
+
+        setAuthenticatedUser(authenticatedUser);
+      } else {
+        if (errorAlert && errorMessage) {
+          errorMessage.textContent = 'Usuario o contraseña incorrectos. Verifica tus credenciales.';
+          errorAlert.classList.remove('hidden');
+        }
+      }
+    }
+
+    function logoutUser() {
+      localStorage.removeItem('leonardo_auth_user');
+      sessionStorage.removeItem('leonardo_auth_user');
+      currentAuthUser = null;
+
+      const errorAlert = document.getElementById('loginErrorAlert');
+      if (errorAlert) errorAlert.classList.add('hidden');
+
+      const passwordInput = document.getElementById('loginPasswordInput');
+      if (passwordInput) passwordInput.value = '';
+
+      showLoginModal(true);
+    }
+
+    function toggleLoginPasswordVisibility() {
+      const passwordInput = document.getElementById('loginPasswordInput');
+      const icon = document.getElementById('loginPasswordToggleIcon');
+      if (!passwordInput) return;
+      if (passwordInput.type === 'password') {
+        passwordInput.type = 'text';
+        if (icon) icon.textContent = 'visibility_off';
+      } else {
+        passwordInput.type = 'password';
+        if (icon) icon.textContent = 'visibility';
+      }
+    }
+
+    function quickFillLogin(u, p) {
+      const usernameInput = document.getElementById('loginUsernameInput');
+      const passwordInput = document.getElementById('loginPasswordInput');
+      const errorAlert = document.getElementById('loginErrorAlert');
+      if (usernameInput) usernameInput.value = u;
+      if (passwordInput) passwordInput.value = p;
+      if (errorAlert) errorAlert.classList.add('hidden');
+      if (passwordInput) passwordInput.focus();
+    }
+
+    function renderAdminUsersList() {
+      const container = document.getElementById('adminUsersList');
+      if (!container) return;
+      const users = getAllAuthUsers();
+      container.innerHTML = users.map(u => `
+        <div class="flex items-center justify-between p-2 rounded-lg bg-surface-container-low border border-border-subtle text-xs">
+          <div class="flex items-center gap-2 min-w-0">
+            <span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-[10px] flex items-center justify-center shrink-0">
+              ${(u.username || 'U')[0].toUpperCase()}
+            </span>
+            <div class="min-w-0">
+              <p class="font-bold text-text-primary text-[11px] leading-tight truncate">${u.name || u.username}</p>
+              <p class="text-[10px] text-text-muted font-mono leading-tight">user: <b>${u.username}</b> · pass: <b>${u.password || '••••'}</b></p>
+            </div>
+          </div>
+          <div class="flex items-center gap-1.5 shrink-0 ml-2">
+            <span class="text-[9px] font-extrabold uppercase px-1.5 py-0.5 rounded ${u.role === 'admin' ? 'badge-wine' : 'badge-green'}">
+              ${u.role || 'client'}
+            </span>
+            <button type="button" onclick="copyClientAccess('${u.username}', '${u.password || ''}', '${u.storeName || ''}')" class="p-1 text-text-muted hover:text-primary transition cursor-pointer" title="Copiar mensaje de acceso para el cliente">
+              <span class="material-symbols-outlined text-[15px]">content_copy</span>
+            </button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    async function handleCreateClientUser() {
+      const uInput = document.getElementById('newClientUsername');
+      const pInput = document.getElementById('newClientPassword');
+      const nameInput = document.getElementById('newClientStoreName');
+      const handleInput = document.getElementById('newClientHandle');
+
+      const username = (uInput ? uInput.value : '').trim().toLowerCase();
+      const password = (pInput ? pInput.value : '').trim();
+      const storeName = (nameInput ? nameInput.value : '').trim();
+      const storeHandle = (handleInput ? handleInput.value : '').trim();
+
+      if (!username || !password) {
+        alert('Por favor especifica al menos usuario y contraseña.');
+        return;
+      }
+
+      const newUser = {
+        username,
+        password,
+        name: storeName || `Cliente ${username}`,
+        role: 'client',
+        storeName: storeName || 'Librería Asociada',
+        storeHandle: storeHandle || `@${username}`
+      };
+
+      const allUsers = getAllAuthUsers();
+      if (allUsers.some(u => (u.username || '').toLowerCase() === username)) {
+        alert(`El usuario "${username}" ya existe.`);
+        return;
+      }
+
+      try {
+        const stored = localStorage.getItem('leonardo_custom_users');
+        const custom = stored ? JSON.parse(stored) : [];
+        custom.push(newUser);
+        localStorage.setItem('leonardo_custom_users', JSON.stringify(custom));
+      } catch (e) {
+        console.error('Error guardando en localStorage:', e);
+      }
+
+      try {
+        await fetch('/api/auth', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'create', newUser })
+        });
+      } catch (e) {}
+
+      if (uInput) uInput.value = '';
+      if (pInput) pInput.value = '';
+      if (nameInput) nameInput.value = '';
+      if (handleInput) handleInput.value = '';
+
+      renderAdminUsersList();
+      alert(`¡Usuario "${username}" creado con éxito! Ya puede iniciar sesión.`);
+    }
+
+    function copyClientAccess(user, pass, store) {
+      const origin = window.location.origin || 'https://tu-dominio.com';
+      const text = `👋 ¡Hola! Te compartimos tus datos de acceso al Orquestador de Redes para Librerías:
+🔗 Enlace: ${origin}
+👤 Usuario: ${user}
+🔑 Contraseña: ${pass}
+📚 Sede: ${store || 'Tu Librería'}
+
+¡Que lo disfrutes!`;
+
+      navigator.clipboard.writeText(text).then(() => {
+        alert('¡Datos de acceso copiados al portapapeles! Puedes pegarlos directamente en WhatsApp o Email para tu cliente.');
+      }).catch(() => {
+        prompt('Copia estos datos de acceso para tu cliente:', text);
+      });
+    }
 
     // CONFIGURACION PERSISTENTE (LOCALSTORAGE)
     const APP_CONFIG = {
@@ -971,6 +1532,7 @@
 
     // INICIALIZACION
     document.addEventListener('DOMContentLoaded', () => {
+      initAuth();
       loadSavedSettingsToForm();
       applyPreset(1);
       setupResponsiveLayout();

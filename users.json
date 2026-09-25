@@ -1,0 +1,42 @@
+[
+  {
+    "username": "admin",
+    "password": "leonardo2025",
+    "name": "Administrador Leonardo",
+    "role": "admin",
+    "storeName": "Casa Central - Av. Corrientes",
+    "storeHandle": "@librerias_central"
+  },
+  {
+    "username": "demo",
+    "password": "demo2025",
+    "name": "Cliente Demo",
+    "role": "client",
+    "storeName": "Librería Palermo Soho",
+    "storeHandle": "@libreria_demo"
+  },
+  {
+    "username": "ateneo",
+    "password": "ateneo2025",
+    "name": "Librería El Ateneo",
+    "role": "client",
+    "storeName": "El Ateneo Grand Splendid",
+    "storeHandle": "@elateneoliterario"
+  },
+  {
+    "username": "cuspide",
+    "password": "cuspide2025",
+    "name": "Librería Cúspide",
+    "role": "client",
+    "storeName": "Cúspide Libros",
+    "storeHandle": "@cuspidelibros"
+  },
+  {
+    "username": "hernandez",
+    "password": "hernandez2025",
+    "name": "Librería Hernández",
+    "role": "client",
+    "storeName": "Librería Hernández",
+    "storeHandle": "@libreriahernandez"
+  }
+]

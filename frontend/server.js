@@ -16,6 +16,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 // Handlers de la API compartida
 let generateHandler = null;
 let uploadHandler = null;
+let authHandler = null;
 
 try {
   generateHandler = require('../api/generate.js');
@@ -29,12 +30,22 @@ try {
   console.warn('api/upload.js no disponible:', e.message);
 }
 
+try {
+  authHandler = require('../api/auth.js');
+} catch (e) {
+  console.warn('api/auth.js no disponible:', e.message);
+}
+
 if (generateHandler) {
   app.all('/api/generate', (req, res) => generateHandler(req, res));
 }
 
 if (uploadHandler) {
   app.all('/api/upload', (req, res) => uploadHandler(req, res));
+}
+
+if (authHandler) {
+  app.all('/api/auth', (req, res) => authHandler(req, res));
 }
 
 app.use(express.static(path.join(__dirname, 'public')));
