@@ -252,13 +252,14 @@
         </div>
 
         <!-- 2. CAJA PRINCIPAL DE ENTRADA / SUBIDA DRAG & DROP & EDITOR -->
-        <div class="card-stitch rounded-2xl p-5 sm:p-6 flex flex-col gap-5">
+        <!-- 2. CAJA PRINCIPAL DE ENTRADA / SUBIDA DRAG & DROP & GENERADOR IA -->
+        <div class="card-stitch rounded-2xl p-5 sm:p-6 flex flex-col gap-4">
           
           <!-- Encabezado con selector IMAGEN | PDF | TEXTO DIRECTO -->
           <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-primary text-[22px]">auto_stories</span>
-              <h2 class="font-serif text-lg font-bold text-text-primary">Entrada de Documento o Reseña</h2>
+              <h2 class="font-serif text-lg font-bold text-text-primary">Subida de Portada y Generación IA</h2>
             </div>
 
             <!-- Tabs de Ingesta -->
@@ -275,77 +276,124 @@
             </div>
           </div>
 
-          <!-- Zona Drag & Drop interactiva -->
-          <div id="dropZoneContainer" class="relative group bg-surface-container-low/70 hover:bg-surface-container-low border-2 border-dashed border-border-strong hover:border-primary transition-all rounded-xl p-6 sm:p-8 flex flex-col items-center justify-center text-center cursor-pointer min-h-[220px]">
+          <!-- Zona Drag & Drop interactiva con preview de foto y controles -->
+          <div id="dropZoneContainer" class="relative group bg-surface-container-low/70 hover:bg-surface-container-low border-2 border-dashed border-border-strong hover:border-primary transition-all rounded-xl p-5 sm:p-6 flex flex-col items-center justify-center text-center cursor-pointer min-h-[210px]">
             <input id="fileUploadInput" type="file" accept=".jpg,.jpeg,.png,.webp,.pdf" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10" onchange="handleFileInputChange(event)">
             
-            <div class="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 text-primary group-hover:scale-105 transition-transform shadow-xs">
-              <span id="uploadIcon" class="material-symbols-outlined text-[30px]">document_scanner</span>
+            <!-- Estado 1: Inicial / Sin archivo cargado -->
+            <div id="dropZonePromptState" class="flex flex-col items-center justify-center pointer-events-none">
+              <div class="w-14 h-14 rounded-full bg-surface-container-highest flex items-center justify-center mb-3 text-primary group-hover:scale-105 transition-transform shadow-xs">
+                <span id="uploadIcon" class="material-symbols-outlined text-[30px]">add_a_photo</span>
+              </div>
+
+              <h3 id="uploadTitle" class="font-serif text-lg font-bold text-text-primary mb-1">
+                Subir foto o escaneo de la portada
+              </h3>
+              <p id="uploadDesc" class="text-xs sm:text-sm text-text-secondary max-w-md mb-4 leading-relaxed">
+                Sube la foto del libro. Claude Vision identificará el título y autor, formulará la reseña y maquetará las 5 diapositivas.
+              </p>
+
+              <div class="flex flex-wrap items-center justify-center gap-3">
+                <span class="px-3.5 py-1.5 bg-white border border-border-subtle font-semibold text-xs text-text-primary rounded-lg shadow-xs group-hover:bg-primary group-hover:text-white transition-colors flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-[16px]">upload_file</span>
+                  Explorar archivo o tomar foto
+                </span>
+                <span class="text-[11px] font-mono text-text-muted">JPG, PNG, WEBP (Máx. 25MB)</span>
+              </div>
             </div>
 
-            <h3 id="uploadTitle" class="font-serif text-lg font-bold text-text-primary mb-1">
-              Subir captura, escaneo o PDF de reseña
-            </h3>
-            <p id="uploadDesc" class="text-xs sm:text-sm text-text-secondary max-w-md mb-4 leading-relaxed">
-              OCR de alta precisión con extracción de entidades literarias, análisis argumental y citas textuales para la red de librerías.
-            </p>
-
-            <div class="flex flex-wrap items-center justify-center gap-3">
-              <span class="px-3.5 py-1.5 bg-white border border-border-subtle font-semibold text-xs text-text-primary rounded-lg shadow-xs group-hover:bg-primary group-hover:text-white transition-colors flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px]">upload_file</span>
-                Explorar archivo o tomar foto
-              </span>
-              <span class="text-[11px] font-mono text-text-muted">JPG, PNG, PDF (Máx. 25MB)</span>
+            <!-- Estado 2: Foto cargada con preview real -->
+            <div id="dropZoneActivePreview" class="hidden w-full flex flex-col items-center z-20">
+              <div class="flex items-center gap-4 bg-white p-3.5 rounded-xl border border-border-subtle shadow-sm w-full max-w-md text-left">
+                <img id="uploadedCoverThumb" src="" alt="Portada" class="w-16 h-24 object-cover rounded-lg shadow-sm border border-border-subtle shrink-0">
+                <div class="min-w-0 flex-1">
+                  <div class="flex items-center gap-1.5 text-status-success font-bold text-xs">
+                    <span class="material-symbols-outlined text-[16px]">check_circle</span>
+                    <span>Foto del libro cargada con éxito</span>
+                  </div>
+                  <h4 id="uploadedCoverName" class="text-xs font-bold text-text-primary truncate mt-0.5">portada.jpg</h4>
+                  <p id="uploadedCoverSize" class="text-[11px] font-mono text-text-muted">0 KB</p>
+                  <button type="button" onclick="triggerFileInput(event)" class="text-[11px] font-bold text-primary hover:underline mt-1.5 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">sync</span>
+                    Cambiar foto
+                  </button>
+                </div>
+              </div>
             </div>
 
-            <!-- Feedback de archivo cargado -->
-            <div id="fileUploadBadge" class="hidden mt-4 px-3.5 py-1.5 bg-status-success/10 border border-status-success/30 rounded-lg flex items-center gap-2 text-status-success text-xs font-bold">
-              <span class="material-symbols-outlined text-[18px]">check_circle</span>
-              <span id="fileUploadName">archivo.pdf</span>
-              <span class="text-text-muted font-normal text-[11px]">(Listo para orquestar con IA)</span>
-            </div>
           </div>
 
-          <!-- Formulario de Metadatos y Contenido -->
-          <div id="metadataInputsBox" class="flex flex-col gap-3 pt-2">
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Título de la Obra *</label>
-                <input id="inputBookTitle" type="text" value="Cien años de soledad" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Autor o Autora *</label>
-                <input id="inputBookAuthor" type="text" value="Gabriel García Márquez" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
-              </div>
+          <!-- BOTÓN PRINCIPAL DE ACCIÓN STITCH (PEGADO DIRECTAMENTE A LA SUBIDA) -->
+          <button id="btnTriggerAi" onclick="executeAiGeneration()" class="w-full btn-stitch-primary p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center gap-1 group cursor-pointer transition shadow-md hover:shadow-lg active:scale-[0.99]">
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[24px] text-accent-ochre group-hover:rotate-12 transition-transform">auto_awesome</span>
+              <span id="btnTriggerAiText" class="font-serif text-xl sm:text-2xl font-bold tracking-wide text-white">Generar carrusel con IA</span>
             </div>
+            <span id="btnTriggerAiSubtext" class="text-xs text-white/80 font-normal">Claude 3.5 analiza la foto, redacta la reseña y maqueta las 5 diapositivas</span>
+          </button>
 
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Dynamic Loading Status Banner -->
+          <div id="aiProcessingBanner" class="hidden bg-surface-container p-4 rounded-2xl border border-border-strong/60 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+              <div class="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
               <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Género / Colección</label>
-                <input id="inputBookGenre" type="text" value="Ficción / Clásico Latinoamericano" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
-              </div>
-              <div>
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Editorial / Sello</label>
-                <input id="inputBookPublisher" type="text" value="Debolsillo / RAE" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+                <p id="aiBannerTitle" class="text-xs font-bold text-text-primary">Orquestando pipeline editorial...</p>
+                <p id="aiBannerSubtitle" class="text-[11px] text-text-secondary">Claude 3.5 Sonnet sintetiza conceptos y maqueta tipografía Newsreader</p>
               </div>
             </div>
-
-            <div>
-              <div class="flex items-center justify-between mb-1">
-                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary">Texto de la Reseña o Crítica Literaria *</label>
-                <span id="reviewCharCount" class="text-[10px] font-mono text-text-muted">340 caracteres</span>
-              </div>
-              <textarea id="inputReviewText" rows="3" class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary focus:outline-none focus:border-primary custom-scrollbar leading-relaxed" oninput="liveUpdateBookData()">Una obra cumbre e inmortal. La historia de la familia Buendía en Macondo no es solo una novela; es un universo fascinante donde lo mágico se entrelaza con las pasiones humanas más crudas. Prosa poética deslumbrante, personajes inolvidables como Úrsula Iguarán o el coronel Aureliano, y una reflexión sobre el destino y la soledad que conmueve profundamente.</textarea>
-            </div>
-
-            <div>
-              <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Cita Destacada para el Slide 2</label>
-              <input id="inputBookQuote" type="text" value="Muchos años después, frente al pelotón de fusilamiento, el coronel Aureliano Buendía había de recordar aquella tarde remota en que su padre lo llevó a conocer el hielo." class="w-full bg-surface-container-low border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary italic focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
-            </div>
+            <span id="aiBannerStep" class="text-xs font-bold font-mono text-primary bg-white px-2 py-1 rounded shadow-xs">Paso 1/4</span>
           </div>
+
+          <!-- Acordeón Desplegable de Metadatos Detectados / Editables -->
+          <details id="accordionMetadata" class="group bg-surface-container-low/60 rounded-xl p-3.5 border border-border-subtle">
+            <summary class="flex items-center justify-between cursor-pointer list-none select-none text-xs font-bold text-text-primary">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[18px] text-primary">tune</span>
+                <span>Metadatos y reseña detectados (opcional / editable)</span>
+              </div>
+              <span class="material-symbols-outlined text-[18px] text-text-muted group-open:rotate-180 transition-transform">expand_more</span>
+            </summary>
+
+            <div id="metadataInputsBox" class="flex flex-col gap-3 pt-3 mt-2 border-t border-border-subtle/80">
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Título de la Obra *</label>
+                  <input id="inputBookTitle" type="text" value="Cien años de soledad" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Autor o Autora *</label>
+                  <input id="inputBookAuthor" type="text" value="Gabriel García Márquez" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+                </div>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Género / Colección</label>
+                  <input id="inputBookGenre" type="text" value="Ficción / Clásico Latinoamericano" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Editorial / Sello</label>
+                  <input id="inputBookPublisher" type="text" value="Debolsillo / RAE" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary font-medium focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+                </div>
+              </div>
+
+              <div>
+                <div class="flex items-center justify-between mb-1">
+                  <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary">Texto de la Reseña o Crítica Literaria *</label>
+                  <span id="reviewCharCount" class="text-[10px] font-mono text-text-muted">340 caracteres</span>
+                </div>
+                <textarea id="inputReviewText" rows="3" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary focus:outline-none focus:border-primary custom-scrollbar leading-relaxed" oninput="liveUpdateBookData()">Una obra cumbre e inmortal. La historia de la familia Buendía en Macondo no es solo una novela; es un universo fascinante donde lo mágico se entrelaza con las pasiones humanas más crudas. Prosa poética deslumbrante, personajes inolvidables como Úrsula Iguarán o el coronel Aureliano, y una reflexión sobre el destino y la soledad que conmueve profundamente.</textarea>
+              </div>
+
+              <div>
+                <label class="block text-[11px] font-bold uppercase tracking-wider text-text-secondary mb-1">Cita Destacada para el Slide 2</label>
+                <input id="inputBookQuote" type="text" value="Muchos años después, frente al pelotón de fusilamiento, el coronel Aureliano Buendía había de recordar aquella tarde remota en que su padre lo llevó a conocer el hielo." class="w-full bg-white border border-border-subtle rounded-xl p-2.5 text-xs text-text-primary italic focus:outline-none focus:border-primary transition" oninput="liveUpdateBookData()">
+              </div>
+            </div>
+          </details>
 
           <!-- Microetiquetas de Seguridad y Motor -->
-          <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border-subtle text-text-muted text-xs">
+          <div class="flex flex-wrap items-center justify-between gap-2 pt-1 border-t border-border-subtle text-text-muted text-xs">
             <div class="flex items-center gap-4">
               <span class="flex items-center gap-1 text-status-success font-medium">
                 <span class="material-symbols-outlined text-[16px]">verified</span>
@@ -361,27 +409,6 @@
             </span>
           </div>
 
-        </div>
-
-        <!-- 3. BOTÓN PRINCIPAL DE ACCIÓN STITCH (Burgundy Luminous) -->
-        <button id="btnTriggerAi" onclick="executeAiGeneration()" class="w-full btn-stitch-primary p-4 sm:p-5 rounded-2xl flex flex-col items-center justify-center gap-1 group cursor-pointer transition">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-[22px] text-accent-ochre group-hover:rotate-12 transition-transform">auto_awesome</span>
-            <span class="font-serif text-xl sm:text-2xl font-bold tracking-wide text-white">Generar carrusel con IA</span>
-          </div>
-          <span class="text-xs text-white/80 font-normal">Sintetiza argumentos, asigna paleta cromática y diagrama las 5 diapositivas</span>
-        </button>
-
-        <!-- Dynamic Loading Status Banner -->
-        <div id="aiProcessingBanner" class="hidden bg-surface-container p-4 rounded-2xl border border-border-strong/60 flex items-center justify-between">
-          <div class="flex items-center gap-3">
-            <div class="w-6 h-6 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
-            <div>
-              <p id="aiBannerTitle" class="text-xs font-bold text-text-primary">Orquestando pipeline editorial n8n...</p>
-              <p id="aiBannerSubtitle" class="text-[11px] text-text-secondary">Claude 3.5 Sonnet sintetiza conceptos y maqueta tipografía Newsreader</p>
-            </div>
-          </div>
-          <span id="aiBannerStep" class="text-xs font-bold font-mono text-primary bg-white px-2 py-1 rounded shadow-xs">Paso 2/4</span>
         </div>
 
       </div>
@@ -446,6 +473,12 @@
                 <span>Caption</span>
               </button>
             </div>
+
+            <!-- Botón para descargar las 5 diapositivas en PNG (1080x1350) -->
+            <button onclick="downloadAllSlidesPng()" class="w-full max-w-[360px] py-2.5 px-3 bg-white hover:bg-surface-container-low border border-border-strong text-text-primary font-bold rounded-xl text-xs transition flex items-center justify-center gap-2 cursor-pointer mt-2 shadow-xs" title="Exportar las 5 imágenes PNG listas para Instagram (1080x1350 px)">
+              <span class="material-symbols-outlined text-[18px] text-primary">collections</span>
+              <span id="labelDownloadAllPng">Descargar las 5 Diapositivas (PNG 1080×1350)</span>
+            </button>
           </div>
 
           <!-- Quick Slide Text Editor Accordion -->
@@ -730,27 +763,33 @@
           </div>
         </div>
 
-        <!-- SECCIÓN 3: WEBHOOKS N8N (OPCIONAL / AUTOMATIZACIÓN EN SERVIDOR) -->
+        <!-- SECCIÓN 3: CEREBRO LLM & WEBHOOKS -->
         <div class="bg-surface-container-low p-4 rounded-xl border border-border-subtle flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <span class="font-bold text-text-primary flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[18px]">alt_route</span>
-              Webhooks de n8n (Opcional - Automatización Desatendida)
+              <span class="material-symbols-outlined text-[18px]">psychology</span>
+              Cerebro LLM (Anthropic Claude 3.5 Sonnet Vision / n8n)
             </span>
-            <span class="text-[10px] font-mono text-text-muted bg-white px-2 py-0.5 rounded border border-border-subtle">Opcional</span>
+            <span class="text-[10px] font-mono text-text-muted bg-white px-2 py-0.5 rounded border border-border-subtle">Vision & Copys</span>
           </div>
 
           <p class="text-[11px] text-text-muted leading-relaxed">
-            💡 <em>Para publicar en Instagram hoy <strong>no necesitas n8n</strong>. La web publica directo a tu cuenta con tu Meta Access Token. Los webhooks de n8n son solo si deseas que un robot en la nube cree o publique posts de forma automática y programada.</em>
+            💡 <em>Para procesar fotos y generar las 5 diapositivas, puedes ingresar tu API Key de Claude directamente aquí o utilizar el webhook de n8n.</em>
           </p>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">1. Webhook de Generación con IA (<span class="font-mono font-normal">Claude 3.5</span>)</label>
+            <label class="block font-bold text-text-secondary mb-1">Anthropic Claude API Key (<span class="font-mono font-normal">sk-ant-...</span>)</label>
+            <input id="cfgAnthropicApiKey" type="password" placeholder="sk-ant-api03-tu_api_key_aqui" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
+            <p class="text-[10px] text-text-muted mt-1">Permite analizar portadas y generar el carrusel directamente desde la web.</p>
+          </div>
+
+          <div class="border-t border-border-subtle pt-2">
+            <label class="block font-bold text-text-secondary mb-1">1. Webhook de Generación con IA en n8n (<span class="font-mono font-normal">Opcional</span>)</label>
             <input id="cfgWebhookUrl" type="text" placeholder="https://tu-n8n.up.railway.app/webhook/generate-carousel" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
           </div>
 
           <div>
-            <label class="block font-bold text-text-secondary mb-1">2. Webhook de Publicación en Redes (<span class="font-mono font-normal">Meta Publish</span>)</label>
+            <label class="block font-bold text-text-secondary mb-1">2. Webhook de Publicación en Redes (<span class="font-mono font-normal">Opcional</span>)</label>
             <input id="cfgPublishWebhookUrl" type="text" placeholder="https://tu-n8n.up.railway.app/webhook/publish-carousel" class="w-full bg-white border border-border-subtle rounded-xl p-2.5 font-mono text-[11px] text-text-primary">
           </div>
         </div>
@@ -881,6 +920,7 @@
     let carouselData = null;
     let activeMobileTab = 'estudio';
     let currentPresetId = 1;
+    let uploadedCoverBase64 = null;
 
     // CONFIGURACION PERSISTENTE (LOCALSTORAGE)
     const APP_CONFIG = {
@@ -888,6 +928,7 @@
       storeHandle: localStorage.getItem('cfgStoreHandle') || '@librerias_central',
       igUserId: localStorage.getItem('cfgIgUserId') || '',
       accessToken: localStorage.getItem('cfgAccessToken') || '',
+      anthropicApiKey: localStorage.getItem('cfgAnthropicApiKey') || '',
       webhookGenerate: localStorage.getItem('cfgWebhookUrl') || '',
       webhookPublish: localStorage.getItem('cfgPublishWebhookUrl') || '',
       r2AccountId: localStorage.getItem('cfgR2AccountId') || '',
@@ -942,6 +983,7 @@
       if (document.getElementById('cfgStoreHandle')) document.getElementById('cfgStoreHandle').value = APP_CONFIG.storeHandle;
       if (document.getElementById('cfgIgUserId')) document.getElementById('cfgIgUserId').value = APP_CONFIG.igUserId;
       if (document.getElementById('cfgAccessToken')) document.getElementById('cfgAccessToken').value = APP_CONFIG.accessToken;
+      if (document.getElementById('cfgAnthropicApiKey')) document.getElementById('cfgAnthropicApiKey').value = APP_CONFIG.anthropicApiKey;
       if (document.getElementById('cfgWebhookUrl')) document.getElementById('cfgWebhookUrl').value = APP_CONFIG.webhookGenerate;
       if (document.getElementById('cfgPublishWebhookUrl')) document.getElementById('cfgPublishWebhookUrl').value = APP_CONFIG.webhookPublish;
       if (document.getElementById('cfgR2AccountId')) document.getElementById('cfgR2AccountId').value = APP_CONFIG.r2AccountId;
@@ -959,15 +1001,19 @@
       if (document.getElementById('publishTargetHandle')) document.getElementById('publishTargetHandle').textContent = APP_CONFIG.storeHandle;
       
       const hasN8n = Boolean(APP_CONFIG.webhookGenerate);
+      const hasClaude = Boolean(APP_CONFIG.anthropicApiKey);
       const dot = document.getElementById('headerStatusDot');
       const txt = document.getElementById('headerStatusText');
       if (dot && txt) {
         if (hasN8n) {
           dot.className = "w-2 h-2 rounded-full bg-status-success animate-pulse";
           txt.textContent = "n8n: Enlazado";
+        } else if (hasClaude) {
+          dot.className = "w-2 h-2 rounded-full bg-status-success animate-pulse";
+          txt.textContent = "Claude: Activo";
         } else {
           dot.className = "w-2 h-2 rounded-full bg-accent-gold";
-          txt.textContent = "n8n: Demo Local";
+          txt.textContent = "IA: Demo Local";
         }
       }
     }
@@ -1062,22 +1108,34 @@
     // APLICAR PRESET
     function applyPreset(id) {
       currentPresetId = id;
+      uploadedCoverBase64 = null;
       const p = BOOK_PRESETS[id];
       if (!p) return;
 
-      // Highlighting cards
+      // Resaltar tarjetas
       [1, 2, 3].forEach(idx => {
         const card = document.getElementById('cardPreset' + idx);
         if (card) {
           if (idx === id) {
-            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group ring-2 ring-primary bg-surface/50";
+            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group ring-2 ring-primary bg-surface/50 opacity-100";
           } else {
-            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group";
+            card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group opacity-90";
           }
         }
       });
 
-      // Populate input fields
+      // Restaurar estado de la zona de subida
+      const promptState = document.getElementById('dropZonePromptState');
+      const previewState = document.getElementById('dropZoneActivePreview');
+      if (promptState) promptState.classList.remove('hidden');
+      if (previewState) previewState.classList.add('hidden');
+
+      const btnText = document.getElementById('btnTriggerAiText');
+      const btnSubtext = document.getElementById('btnTriggerAiSubtext');
+      if (btnText) btnText.textContent = "Generar carrusel con IA";
+      if (btnSubtext) btnSubtext.textContent = "Claude 3.5 analiza la foto o datos, redacta la reseña y maqueta las 5 diapositivas";
+
+      // Llenar campos de formulario
       document.getElementById('inputBookTitle').value = p.title;
       document.getElementById('inputBookAuthor').value = p.author;
       document.getElementById('inputBookGenre').value = p.genre;
@@ -1086,12 +1144,6 @@
       document.getElementById('inputBookQuote').value = p.quote;
 
       document.getElementById('reviewCharCount').textContent = p.review.length + ' caracteres';
-
-      // Feedback badge
-      const badge = document.getElementById('fileUploadBadge');
-      const filename = document.getElementById('fileUploadName');
-      filename.textContent = `reseña_critica_${p.title.toLowerCase().replace(/\s+/g, '_')}.pdf`;
-      badge.classList.remove('hidden');
 
       generateCarouselModel(p);
     }
@@ -1114,8 +1166,8 @@
       if (mode === 'image') {
         tabImg.className = "px-3 py-1 rounded-lg bg-white text-primary shadow-xs transition-all font-bold";
         dropZone.classList.remove('hidden');
-        uploadTitle.textContent = "Subir foto o escaneo de portada / faja";
-        uploadDesc.textContent = "OCR automático con calibración cromática del lomo y tipografía de tapa.";
+        uploadTitle.textContent = "Subir foto o escaneo de la portada";
+        uploadDesc.textContent = "Sube la foto del libro. Claude Vision identificará el título y autor, formulará la reseña y maquetará las 5 diapositivas.";
         uploadIcon.textContent = "add_a_photo";
         fileInput.setAttribute('accept', '.jpg,.jpeg,.png,.webp');
       } else if (mode === 'pdf') {
@@ -1131,17 +1183,53 @@
       }
     }
 
+    function triggerFileInput(e) {
+      if (e) {
+        e.stopPropagation();
+        e.preventDefault();
+      }
+      document.getElementById('fileUploadInput').click();
+    }
+
     function handleFileInputChange(e) {
       const file = e.target.files[0];
       if (!file) return;
 
-      const badge = document.getElementById('fileUploadBadge');
-      const filename = document.getElementById('fileUploadName');
-      filename.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
-      badge.classList.remove('hidden');
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        uploadedCoverBase64 = evt.target.result;
 
-      const desc = document.getElementById('uploadDesc');
-      desc.textContent = "Archivo cargado correctamente. Listo para procesar con IA.";
+        // Mostrar vista previa en la zona de drop
+        const promptState = document.getElementById('dropZonePromptState');
+        const previewState = document.getElementById('dropZoneActivePreview');
+        if (promptState) promptState.classList.add('hidden');
+        if (previewState) previewState.classList.remove('hidden');
+
+        document.getElementById('uploadedCoverThumb').src = uploadedCoverBase64;
+        document.getElementById('uploadedCoverName').textContent = file.name;
+        document.getElementById('uploadedCoverSize').textContent = (file.size / 1024).toFixed(0) + ' KB';
+
+        // Actualizar textos del botón de acción
+        const btnText = document.getElementById('btnTriggerAiText');
+        const btnSubtext = document.getElementById('btnTriggerAiSubtext');
+        if (btnText) btnText.textContent = "Generar carrusel con IA desde esta foto";
+        if (btnSubtext) btnSubtext.textContent = "Claude 3.5 Sonnet examinará la portada, redactará la reseña y maquetará los 5 slides";
+
+        // Atenuar selección de presets ya que se cargó un libro nuevo
+        [1, 2, 3].forEach(idx => {
+          const card = document.getElementById('cardPreset' + idx);
+          if (card) card.className = "card-stitch-interactive rounded-xl p-3 flex items-center gap-3 cursor-pointer group opacity-50";
+        });
+
+        // Actualizar de inmediato la diapositiva 1 para ver la foto real en el mockup 3D
+        if (carouselData && carouselData.book) {
+          carouselData.book.coverUrl = uploadedCoverBase64;
+          carouselData.book.title = "Foto de Portada Cargada";
+          carouselData.book.author = "Listo para procesar con IA";
+          renderFeedSlide();
+        }
+      };
+      reader.readAsDataURL(file);
     }
 
     function liveUpdateBookData() {
@@ -1150,7 +1238,7 @@
         author: document.getElementById('inputBookAuthor').value.trim() || "Gabriel García Márquez",
         genre: document.getElementById('inputBookGenre').value.trim() || "Ficción",
         publisher: document.getElementById('inputBookPublisher').value.trim() || "Editorial Central",
-        coverUrl: BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl,
+        coverUrl: uploadedCoverBase64 || (BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl),
         review: document.getElementById('inputReviewText').value.trim() || "Una lectura fascinante...",
         quote: document.getElementById('inputBookQuote').value.trim() || "Una frase inolvidable..."
       };
@@ -1158,32 +1246,39 @@
       generateCarouselModel(p);
     }
 
-    // DISPARADOR DE GENERACION IA (SOPORTA N8N REAL O SIMULACION DEMO)
+    // DISPARADOR DE GENERACION IA CON FOTO O TEXTO
     async function executeAiGeneration() {
       const banner = document.getElementById('aiProcessingBanner');
       banner.classList.remove('hidden');
-      document.getElementById('aiBannerTitle').textContent = "Orquestando pipeline editorial n8n...";
-      document.getElementById('aiBannerSubtitle').textContent = "Claude 3.5 Sonnet sintetiza conceptos y maqueta tipografía Newsreader";
-      document.getElementById('aiBannerStep').textContent = "Paso 2/4";
+      document.getElementById('aiBannerTitle').textContent = "Iniciando análisis multimodal...";
+      document.getElementById('aiBannerSubtitle').textContent = "Claude 3.5 Sonnet examina la portada y tipografía...";
+      document.getElementById('aiBannerStep').textContent = "Paso 1/4";
 
       const payload = {
-        bookTitle: document.getElementById('inputBookTitle').value.trim() || "Cien años de soledad",
-        bookAuthor: document.getElementById('inputBookAuthor').value.trim() || "Gabriel García Márquez",
-        genre: document.getElementById('inputBookGenre').value.trim() || "Ficción",
-        publisher: document.getElementById('inputBookPublisher').value.trim() || "Editorial",
+        imageBase64: uploadedCoverBase64 || null,
+        bookTitle: document.getElementById('inputBookTitle').value.trim(),
+        bookAuthor: document.getElementById('inputBookAuthor').value.trim(),
+        genre: document.getElementById('inputBookGenre').value.trim(),
+        publisher: document.getElementById('inputBookPublisher').value.trim(),
         reviewText: document.getElementById('inputReviewText').value.trim(),
-        quote: document.getElementById('inputBookQuote').value.trim(),
-        coverImageUrl: BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl,
+        quoteText: document.getElementById('inputBookQuote').value.trim(),
+        coverImageUrl: uploadedCoverBase64 || (BOOK_PRESETS[currentPresetId] ? BOOK_PRESETS[currentPresetId].coverUrl : BOOK_PRESETS[1].coverUrl),
+        apiKey: APP_CONFIG.anthropicApiKey,
         bookstore: {
           name: APP_CONFIG.storeName,
           instagramHandle: APP_CONFIG.storeHandle
         }
       };
 
-      // Si hay webhook de n8n configurado, hacer llamada HTTP real
+      let generatedData = null;
+
+      // 1. Intentar con Webhook de n8n si está configurado
       if (APP_CONFIG.webhookGenerate && APP_CONFIG.webhookGenerate.startsWith('http')) {
         try {
-          document.getElementById('aiBannerSubtitle').textContent = "Enviando payload al webhook de n8n...";
+          document.getElementById('aiBannerTitle').textContent = "Orquestando con n8n...";
+          document.getElementById('aiBannerSubtitle').textContent = "Enviando imagen a Claude 3.5 Sonnet en n8n...";
+          document.getElementById('aiBannerStep').textContent = "Paso 2/4";
+
           const response = await fetch(APP_CONFIG.webhookGenerate, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
@@ -1191,45 +1286,137 @@
           });
 
           if (response.ok) {
-            const data = await response.json();
-            if (data && data.slides) {
-              carouselData = {
-                book: payload,
-                slides: data.slides,
-                caption: data.caption || `✨ Reseña: "${payload.bookTitle}" de ${payload.bookAuthor}.`
-              };
-              currentSlide = 0;
-              renderFeedSlide();
-            }
+            const resJson = await response.json();
+            generatedData = resJson.data || resJson.book || resJson;
           }
         } catch (err) {
-          console.warn("Llamada al webhook de n8n devolvió error o timeout, usando generador local de respaldo:", err);
+          console.warn("Llamada al webhook de n8n devolvió error, probando /api/generate:", err);
         }
       }
 
-      // Finalizar procesamiento con éxito
-      setTimeout(() => {
-        liveUpdateBookData();
-        banner.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="material-symbols-outlined text-status-success text-[24px]">task_alt</span>
-            <div>
-              <p class="text-xs font-bold text-text-primary">¡Carrusel generado con éxito!</p>
-              <p class="text-[11px] text-text-secondary">5 diapositivas diagramadas en Suite Editorial con tipografía Newsreader.</p>
-            </div>
-          </div>
-          <button onclick="scrollToFeed()" class="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold shadow-xs hover:bg-brand-wine-hover transition cursor-pointer">
-            Ver Carrusel &rarr;
-          </button>
-        `;
+      // 2. Si no hubo respuesta de n8n, intentar con endpoint serverless /api/generate
+      if (!generatedData) {
+        try {
+          document.getElementById('aiBannerTitle').textContent = "Consultando Claude 3.5 Sonnet Vision...";
+          document.getElementById('aiBannerSubtitle').textContent = "Extrayendo título, autor y redactando reseña literaria...";
+          document.getElementById('aiBannerStep').textContent = "Paso 2/4";
 
-        // Switch to feed on mobile or scroll on desktop
-        if (window.innerWidth < 1024) {
-          selectMobileTab('feed');
-        } else {
-          document.getElementById('secFeed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+          const response = await fetch('/api/generate', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+          });
+
+          if (response.ok) {
+            const resJson = await response.json();
+            if (resJson.success && resJson.data) {
+              generatedData = resJson.data;
+            }
+          } else {
+            const errData = await response.json().catch(() => ({}));
+            if (errData.error && errData.guide) {
+              console.info("Info /api/generate:", errData.guide);
+            }
+          }
+        } catch (err) {
+          console.warn("Fallo en /api/generate:", err);
         }
-      }, 1100);
+      }
+
+      // Paso 3/4: Calibrando paleta y maquetando
+      document.getElementById('aiBannerTitle').textContent = "Calibrando paleta cromática editorial...";
+      document.getElementById('aiBannerSubtitle').textContent = "Maquetando 5 diapositivas vectoriales en proporción 4:5...";
+      document.getElementById('aiBannerStep').textContent = "Paso 3/4";
+
+      await new Promise(r => setTimeout(r, 600));
+
+      if (generatedData) {
+        if (generatedData.title) document.getElementById('inputBookTitle').value = generatedData.title;
+        if (generatedData.author) document.getElementById('inputBookAuthor').value = generatedData.author;
+        if (generatedData.genre) document.getElementById('inputBookGenre').value = generatedData.genre;
+        if (generatedData.publisher) document.getElementById('inputBookPublisher').value = generatedData.publisher;
+        if (generatedData.review) document.getElementById('inputReviewText').value = generatedData.review;
+        if (generatedData.quote) document.getElementById('inputBookQuote').value = generatedData.quote;
+        document.getElementById('reviewCharCount').textContent = (generatedData.review || '').length + ' caracteres';
+
+        carouselData = {
+          book: {
+            title: generatedData.title || payload.bookTitle || 'Obra Destacada',
+            author: generatedData.author || payload.bookAuthor || 'Autor',
+            genre: generatedData.genre || payload.genre || 'Ficción',
+            publisher: generatedData.publisher || payload.publisher || 'Editorial',
+            coverUrl: uploadedCoverBase64 || payload.coverImageUrl,
+            review: generatedData.review || payload.reviewText || '',
+            quote: generatedData.quote || payload.quoteText || ''
+          },
+          palette: generatedData.palette || null,
+          slides: (generatedData.slides && generatedData.slides.length === 5) ? generatedData.slides : [
+            {
+              type: "cover_hook",
+              category: "RECOMENDACIÓN EDITORIAL",
+              title: `¿POR QUÉ ${(generatedData.title || payload.bookTitle || 'ESTE LIBRO').toUpperCase()} ES LA LECTURA DEL MOMENTO?`,
+              subtitle: "Reseña literaria sin spoilers",
+              body: ""
+            },
+            {
+              type: "quote",
+              category: "CITA INOLVIDABLE",
+              title: "LA VOZ DEL AUTOR",
+              subtitle: "Frase célebre de la obra",
+              quote: generatedData.quote || `"${(generatedData.review || payload.reviewText || '').substring(0, 110)}..."`
+            },
+            {
+              type: "synopsis",
+              category: "LA PREMISA",
+              title: "EL CORAZÓN DEL RELATO",
+              subtitle: "Síntesis argumental",
+              body: (generatedData.review || payload.reviewText || '').substring(0, 240)
+            },
+            {
+              type: "highlights",
+              category: "VEREDICTO LIBRERO",
+              title: "¿POR QUÉ DEBES LEERLO HOY?",
+              subtitle: "Puntos clave de la crítica",
+              body: "Una narrativa magnética con personajes inolvidables construidos con maestría. Si buscas una lectura transformadora que te envuelva desde la primera página, esta es la elección perfecta."
+            },
+            {
+              type: "cta",
+              category: "DISPONIBILIDAD",
+              title: "EN TODAS NUESTRAS SUCURSALES",
+              subtitle: "Ejemplares en stock físico y envíos",
+              body: `Visítanos en ${APP_CONFIG.storeName} o reserva tu copia por DM en ${APP_CONFIG.storeHandle}.`
+            }
+          ],
+          caption: generatedData.caption || `✨ Reseña destacada: "${generatedData.title || payload.bookTitle}" de ${generatedData.author || payload.bookAuthor}.\n\n📖 Desliza para descubrir la premisa sin spoilers y por qué no puedes dejar de leerlo.\n\n📍 Ejemplares disponibles en ${APP_CONFIG.storeName}.\n\n#LibrosRecomendados #Bookstagram #Lecturas2025`
+        };
+      } else {
+        if (uploadedCoverBase64 && (!APP_CONFIG.anthropicApiKey && !APP_CONFIG.webhookGenerate)) {
+          alert("💡 Para activar el análisis de visión automático con Claude 3.5 Sonnet:\n\nHaz clic en el engranaje ⚙️ (Ajustes) y pega tu Anthropic Claude API Key (o conecta tu webhook de n8n).\n\nMientras tanto, hemos maquetado el carrusel con la foto de tu libro.");
+        }
+        liveUpdateBookData();
+      }
+
+      currentSlide = 0;
+      renderFeedSlide();
+
+      banner.innerHTML = `
+        <div class="flex items-center gap-3">
+          <span class="material-symbols-outlined text-status-success text-[24px]">task_alt</span>
+          <div>
+            <p class="text-xs font-bold text-text-primary">¡Carrusel generado con éxito!</p>
+            <p class="text-[11px] text-text-secondary">5 diapositivas diagramadas con tu foto en Suite Editorial.</p>
+          </div>
+        </div>
+        <button onclick="scrollToFeed()" class="px-3 py-1.5 bg-primary text-white rounded-lg text-xs font-bold shadow-xs hover:bg-brand-wine-hover transition cursor-pointer">
+          Ver Carrusel &rarr;
+        </button>
+      `;
+
+      if (window.innerWidth < 1024) {
+        selectMobileTab('feed');
+      } else {
+        document.getElementById('secFeed').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
     }
 
     // MODELO DE DATOS DEL CARRUSEL
@@ -1292,14 +1479,18 @@
       const slide = carouselData.slides[idx];
       const book = carouselData.book;
 
+      const primaryCol = (carouselData.palette && carouselData.palette.primary) || '#5c091c';
+      const accentCol = (carouselData.palette && carouselData.palette.accent) || '#C29B38';
+      const bgCol = (carouselData.palette && carouselData.palette.background) || '#FAF7F2';
+
       let contentSvg = '';
 
       if (slide.type === 'cover_hook') {
         contentSvg = `
           <!-- Pill Badge Categoría -->
           <g transform="translate(80, 100)">
-            <rect x="0" y="0" width="310" height="44" rx="22" fill="#5c091c" opacity="0.1" />
-            <text x="155" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#5c091c" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
+            <rect x="0" y="0" width="310" height="44" rx="22" fill="${primaryCol}" opacity="0.12" />
+            <text x="155" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="${primaryCol}" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category || 'RECOMENDACIÓN EDITORIAL')}</text>
           </g>
           
           <!-- Título Hook -->
@@ -1310,32 +1501,32 @@
           </foreignObject>
 
           <!-- Subtítulo -->
-          <text x="80" y="380" font-family="'Public Sans', sans-serif" font-size="22" fill="#5c091c" font-weight="600">
+          <text x="80" y="380" font-family="'Public Sans', sans-serif" font-size="22" fill="${primaryCol}" font-weight="600">
             ${escapeXml(slide.subtitle)}
           </text>
 
-          <!-- Portada con Sombra Editorial -->
+          <!-- Portada con Sombra Editorial 3D -->
           <g transform="translate(${width / 2 - 180}, 440)">
-            <rect x="15" y="15" width="340" height="500" rx="14" fill="#000000" opacity="0.18" filter="blur(15px)" />
+            <rect x="15" y="15" width="340" height="500" rx="14" fill="#000000" opacity="0.22" filter="blur(18px)" />
             <clipPath id="bookCoverClip_${idx}"><rect x="0" y="0" width="360" height="520" rx="12" /></clipPath>
             <image href="${escapeXml(book.coverUrl)}" x="0" y="0" width="360" height="520" preserveAspectRatio="xMidYMid slice" clip-path="url(#bookCoverClip_${idx})" />
           </g>
 
           <!-- Metadata al pie -->
           <g transform="translate(80, ${height - 200})">
-            <text x="0" y="0" font-family="'Newsreader', serif" font-size="34" font-weight="700" fill="#5c091c">${escapeXml(book.title)}</text>
+            <text x="0" y="0" font-family="'Newsreader', serif" font-size="34" font-weight="700" fill="${primaryCol}">${escapeXml(book.title)}</text>
             <text x="0" y="36" font-family="'Public Sans', sans-serif" font-size="22" fill="#5C5D53">de ${escapeXml(book.author)} • ${escapeXml(book.publisher || 'Editorial')}</text>
           </g>
         `;
       } else if (slide.type === 'quote') {
         contentSvg = `
           <g transform="translate(80, 100)">
-            <rect x="0" y="0" width="240" height="44" rx="22" fill="#C29B38" opacity="0.15" />
-            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#94721D" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
+            <rect x="0" y="0" width="240" height="44" rx="22" fill="${accentCol}" opacity="0.18" />
+            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="${accentCol}" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category || 'CITA INOLVIDABLE')}</text>
           </g>
 
           <!-- Comilla Decorativa de Fondo -->
-          <text x="70" y="320" font-family="'Newsreader', serif" font-size="260" font-weight="900" fill="#5c091c" opacity="0.08">“</text>
+          <text x="70" y="320" font-family="'Newsreader', serif" font-size="260" font-weight="900" fill="${primaryCol}" opacity="0.08">“</text>
           
           <!-- Tarjeta de Cita -->
           <rect x="70" y="280" width="${width - 140}" height="600" rx="28" fill="#FFFFFF" stroke="#DDDCD1" stroke-width="1.5" />
@@ -1347,8 +1538,8 @@
           </foreignObject>
 
           <g transform="translate(120, 810)">
-            <line x1="0" y1="0" x2="60" y2="0" stroke="#5c091c" stroke-width="4" />
-            <text x="80" y="8" font-family="'Newsreader', serif" font-size="28" font-weight="700" fill="#5c091c">${escapeXml(book.title)}</text>
+            <line x1="0" y1="0" x2="60" y2="0" stroke="${primaryCol}" stroke-width="4" />
+            <text x="80" y="8" font-family="'Newsreader', serif" font-size="28" font-weight="700" fill="${primaryCol}">${escapeXml(book.title)}</text>
             <text x="80" y="38" font-family="'Public Sans', sans-serif" font-size="20" fill="#5C5D53">${escapeXml(book.author)}</text>
           </g>
         `;
@@ -1356,8 +1547,8 @@
         // Synopsis, Highlights, CTA
         contentSvg = `
           <g transform="translate(80, 100)">
-            <rect x="0" y="0" width="240" height="44" rx="22" fill="#5c091c" opacity="0.1" />
-            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="#5c091c" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
+            <rect x="0" y="0" width="240" height="44" rx="22" fill="${primaryCol}" opacity="0.12" />
+            <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="${primaryCol}" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
           </g>
 
           <foreignObject x="80" y="180" width="${width - 160}" height="180">
@@ -1379,12 +1570,12 @@
       // Footer común con branding de la librería
       const footerSvg = `
         <g transform="translate(80, ${height - 90})">
-          <line x1="0" y1="0" x2="${width - 160}" y2="0" stroke="#5c091c" stroke-width="2" opacity="0.2" />
-          <text x="0" y="40" font-family="'Newsreader', serif" font-size="24" font-weight="800" fill="#5c091c">${escapeXml(APP_CONFIG.storeName.toUpperCase())}</text>
+          <line x1="0" y1="0" x2="${width - 160}" y2="0" stroke="${primaryCol}" stroke-width="2" opacity="0.2" />
+          <text x="0" y="40" font-family="'Newsreader', serif" font-size="24" font-weight="800" fill="${primaryCol}">${escapeXml(APP_CONFIG.storeName.toUpperCase())}</text>
           <text x="0" y="68" font-family="'Public Sans', sans-serif" font-size="18" fill="#5C5D53">${escapeXml(APP_CONFIG.storeHandle)} • Red Editorial</text>
           
-          <rect x="${width - 270}" y="15" width="110" height="42" rx="21" fill="#5c091c" opacity="0.1" />
-          <text x="${width - 215}" y="42" font-family="'Public Sans', sans-serif" font-size="18" font-weight="700" fill="#5c091c" text-anchor="middle">
+          <rect x="${width - 270}" y="15" width="110" height="42" rx="21" fill="${primaryCol}" opacity="0.12" />
+          <text x="${width - 215}" y="42" font-family="'Public Sans', sans-serif" font-size="18" font-weight="700" fill="${primaryCol}" text-anchor="middle">
             ${idx + 1} / ${carouselData.slides.length} ${idx < carouselData.slides.length - 1 ? '→' : '✓'}
           </text>
         </g>
@@ -1392,7 +1583,7 @@
 
       return `
         <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 ${width} ${height}">
-          <rect width="${width}" height="${height}" fill="#FAF7F2" />
+          <rect width="${width}" height="${height}" fill="${bgCol}" />
           ${contentSvg}
           ${footerSvg}
         </svg>
@@ -1473,6 +1664,36 @@
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+    }
+
+    async function downloadAllSlidesPng() {
+      if (!carouselData || !carouselData.slides) return;
+      const label = document.getElementById('labelDownloadAllPng');
+      const originalText = label ? label.textContent : '';
+      try {
+        for (let i = 0; i < carouselData.slides.length; i++) {
+          if (label) label.textContent = `Exportando slide ${i + 1} de ${carouselData.slides.length}...`;
+          const svgStr = getSlideSvgString(i);
+          const pngUrl = await svgToPngDataUrl(svgStr, 1080, 1350);
+          const a = document.createElement('a');
+          a.href = pngUrl;
+          const bookTitle = (carouselData.book && carouselData.book.title) ? carouselData.book.title : 'carrusel';
+          const safeTitle = bookTitle.toLowerCase().replace(/[^a-z0-9]/g, '-');
+          a.download = `carrusel-${safeTitle}-slide-${i + 1}.png`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          await new Promise(r => setTimeout(r, 450));
+        }
+        if (label) {
+          label.textContent = "✓ ¡5 diapositivas descargadas!";
+          setTimeout(() => { label.textContent = originalText; }, 2500);
+        }
+      } catch (err) {
+        console.error("Error al descargar PNGs:", err);
+        alert("Error al exportar PNGs: " + err.message);
+        if (label) label.textContent = originalText;
+      }
     }
 
     function copyInstagramCaption() {
@@ -1849,6 +2070,7 @@
       APP_CONFIG.storeHandle = document.getElementById('cfgStoreHandle').value.trim() || '@librerias_central';
       APP_CONFIG.igUserId = document.getElementById('cfgIgUserId').value.trim();
       APP_CONFIG.accessToken = document.getElementById('cfgAccessToken').value.trim();
+      APP_CONFIG.anthropicApiKey = document.getElementById('cfgAnthropicApiKey') ? document.getElementById('cfgAnthropicApiKey').value.trim() : '';
       APP_CONFIG.webhookGenerate = document.getElementById('cfgWebhookUrl').value.trim();
       APP_CONFIG.webhookPublish = document.getElementById('cfgPublishWebhookUrl').value.trim();
       const rawAccountId = document.getElementById('cfgR2AccountId').value.trim();
@@ -1867,6 +2089,7 @@
       localStorage.setItem('cfgStoreHandle', APP_CONFIG.storeHandle);
       localStorage.setItem('cfgIgUserId', APP_CONFIG.igUserId);
       localStorage.setItem('cfgAccessToken', APP_CONFIG.accessToken);
+      localStorage.setItem('cfgAnthropicApiKey', APP_CONFIG.anthropicApiKey);
       localStorage.setItem('cfgWebhookUrl', APP_CONFIG.webhookGenerate);
       localStorage.setItem('cfgPublishWebhookUrl', APP_CONFIG.webhookPublish);
       localStorage.setItem('cfgR2AccountId', APP_CONFIG.r2AccountId);
