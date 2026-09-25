@@ -2150,6 +2150,56 @@
       renderFeedSlide();
     }
 
+    // TEXTO MULTILÍNEA EN SVG NATIVO
+    // (reemplaza <foreignObject>: un SVG con foreignObject "contamina" el canvas y
+    // el navegador bloquea exportarlo a JPEG para publicarlo)
+    let _measureCtx = null;
+    function measureTextWidth(text, font) {
+      if (!_measureCtx) _measureCtx = document.createElement('canvas').getContext('2d');
+      _measureCtx.font = font;
+      return _measureCtx.measureText(text).width;
+    }
+
+    function svgWrappedText(text, { x, y, maxWidth, fontSize, lineHeight, maxLines, family, fallback, weight = 400, italic = false, fill = '#1B1C15' }) {
+      const clean = String(text || '').replace(/\s+/g, ' ').trim();
+      if (!clean) return '';
+      const style = italic ? 'italic ' : '';
+      // En pantalla se usa la fuente web; al exportar a imagen se usa la de respaldo.
+      // Se mide con ambas y se toma el ancho mayor para que el corte sirva en los dos casos.
+      const width = t => Math.max(
+        measureTextWidth(t, `${style}${weight} ${fontSize}px ${family}, ${fallback}`),
+        measureTextWidth(t, `${style}${weight} ${fontSize}px ${fallback}`)
+      );
+
+      const lines = [];
+      let current = '';
+      for (const word of clean.split(' ')) {
+        const candidate = current ? current + ' ' + word : word;
+        if (current && width(candidate) > maxWidth) {
+          lines.push(current);
+          current = word;
+        } else {
+          current = candidate;
+        }
+      }
+      if (current) lines.push(current);
+
+      if (lines.length > maxLines) {
+        lines.length = maxLines;
+        let last = lines[maxLines - 1];
+        while (last.length > 1 && width(last + '…') > maxWidth) {
+          last = last.slice(0, last.lastIndexOf(' ') > 0 ? last.lastIndexOf(' ') : last.length - 1);
+        }
+        lines[maxLines - 1] = last.replace(/[\s,.;:]+$/, '') + '…';
+      }
+
+      const step = fontSize * lineHeight;
+      const tspans = lines.map((line, i) =>
+        `<tspan x="${x}" dy="${i === 0 ? 0 : step}">${escapeXml(line)}</tspan>`
+      ).join('');
+      return `<text x="${x}" y="${y + fontSize}" font-family="${family}, ${fallback}" font-size="${fontSize}" font-weight="${weight}"${italic ? ' font-style="italic"' : ''} fill="${fill}">${tspans}</text>`;
+    }
+
     // GENERADOR DE SVG VECTORIAL PARA CUALQUIER SLIDE
     function getSlideSvgString(idx, width = 1080, height = 1350) {
       if (!carouselData || !carouselData.slides[idx]) return '';
@@ -2171,14 +2221,10 @@
           </g>
           
           <!-- Título Hook -->
-          <foreignObject x="80" y="180" width="${width - 160}" height="220">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:52px; font-weight:700; color:#1B1C15; line-height:1.2; letter-spacing:-0.02em;">
-              ${escapeXml(slide.title)}
-            </div>
-          </foreignObject>
+          ${svgWrappedText(slide.title, { x: 80, y: 180, maxWidth: width - 160, fontSize: 50, lineHeight: 1.15, maxLines: 3, family: "'Newsreader'", fallback: 'Georgia, serif', weight: 700 })}
 
           <!-- Subtítulo -->
-          <text x="80" y="380" font-family="'Public Sans', sans-serif" font-size="22" fill="${primaryCol}" font-weight="600">
+          <text x="80" y="405" font-family="'Public Sans', sans-serif" font-size="22" fill="${primaryCol}" font-weight="600">
             ${escapeXml(slide.subtitle)}
           </text>
 
@@ -2208,11 +2254,7 @@
           <!-- Tarjeta de Cita -->
           <rect x="70" y="280" width="${width - 140}" height="600" rx="28" fill="#FFFFFF" stroke="#DDDCD1" stroke-width="1.5" />
           
-          <foreignObject x="120" y="350" width="${width - 240}" height="390">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:42px; font-style:italic; font-weight:600; color:#1B1C15; line-height:1.45;">
-              ${escapeXml(slide.quote || slide.body)}
-            </div>
-          </foreignObject>
+          ${svgWrappedText(slide.quote || slide.body, { x: 120, y: 350, maxWidth: width - 240, fontSize: 42, lineHeight: 1.45, maxLines: 6, family: "'Newsreader'", fallback: 'Georgia, serif', weight: 600, italic: true })}
 
           <g transform="translate(120, 810)">
             <line x1="0" y1="0" x2="60" y2="0" stroke="${primaryCol}" stroke-width="4" />
@@ -2228,19 +2270,11 @@
             <text x="120" y="28" font-family="'Public Sans', sans-serif" font-size="14" font-weight="800" fill="${primaryCol}" text-anchor="middle" letter-spacing="2">${escapeXml(slide.category)}</text>
           </g>
 
-          <foreignObject x="80" y="180" width="${width - 160}" height="180">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Newsreader',serif; font-size:48px; font-weight:700; color:#1B1C15; line-height:1.2;">
-              ${escapeXml(slide.title)}
-            </div>
-          </foreignObject>
+          ${svgWrappedText(slide.title, { x: 80, y: 180, maxWidth: width - 160, fontSize: 48, lineHeight: 1.2, maxLines: 3, family: "'Newsreader'", fallback: 'Georgia, serif', weight: 700 })}
 
           <rect x="70" y="350" width="${width - 140}" height="570" rx="26" fill="#FFFFFF" stroke="#DDDCD1" stroke-width="1.5" />
 
-          <foreignObject x="120" y="420" width="${width - 240}" height="420">
-            <div xmlns="http://www.w3.org/1999/xhtml" style="font-family:'Public Sans',sans-serif; font-size:32px; font-weight:400; color:#1B1C15; line-height:1.65;">
-              ${escapeXml(slide.body)}
-            </div>
-          </foreignObject>
+          ${svgWrappedText(slide.body, { x: 120, y: 420, maxWidth: width - 240, fontSize: 32, lineHeight: 1.65, maxLines: 8, family: "'Public Sans'", fallback: 'Arial, sans-serif' })}
         `;
       }
 

@@ -57,8 +57,8 @@ function buildInstructions(storeName, storeHandle) {
 2. Una reseña literaria apasionada, magnética y sin spoilers de 250 a 350 caracteres para Bookstagram.
 3. Una cita célebre o frase representativa e inolvidable de la obra.
 4. Las 5 diapositivas, en este orden exacto (usa "" en los campos que no apliquen):
-   - Slide 1 (cover_hook): categoría "RECOMENDACIÓN EDITORIAL", título gancho (ej. "¿POR QUÉ TODOS ESTÁN LEYENDO...?"), subtítulo.
-   - Slide 2 (quote): categoría "CITA INOLVIDABLE", título "LA VOZ DEL AUTOR", quote (la cita), subtítulo.
+   - Slide 1 (cover_hook): categoría "RECOMENDACIÓN EDITORIAL", título gancho de máx. 70 caracteres (ej. "¿POR QUÉ TODOS ESTÁN LEYENDO...?"), subtítulo.
+   - Slide 2 (quote): categoría "CITA INOLVIDABLE", título "LA VOZ DEL AUTOR", quote (la cita, máx. 200 caracteres), subtítulo.
    - Slide 3 (synopsis): categoría "LA PREMISA", título "EL CORAZÓN DEL RELATO", body (síntesis argumental, máx. 240 caracteres).
    - Slide 4 (highlights): categoría "VEREDICTO LIBRERO", título "¿POR QUÉ DEBES LEERLO HOY?", body (por qué apasiona y a quién se recomienda, máx. 240 caracteres).
    - Slide 5 (cta): categoría "DISPONIBILIDAD", título "EN TODAS NUESTRAS SUCURSALES", body (invitación a visitar ${storeName} o pedir por DM con ${storeHandle}).
